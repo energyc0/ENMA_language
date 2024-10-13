@@ -3,6 +3,7 @@
 #include <vector>
 #include <iomanip>
 #include "enma_compiler.h"
+#include "enma_types.h"
 
 ENMA_compiler::ENMA_compiler(const char* exe_name): _executable_name(exe_name){}
 
@@ -90,10 +91,12 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     input_file.open(filename);
     if(!input_file.is_open()){
         std::cerr << filename << " - failed to open,\n";
+        input_file.close();
         return false;
     }else{
         std::cout << filename << " - compiling.\n";
     }
+    input_file.close();
 
     bool result;
     auto tokens = _lexer.lexical_analysis(input_file, result);
@@ -107,11 +110,21 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     auto ast = _parser.binary_expr(storage, result);
     if(!result){
         return false;
-    }else{
-        debug_ast(ast.get());
-        std::cout << "=" << ast->interpret_node() << '\n';
     }
 
-    input_file.close();
+    std::ofstream output_file;
+    output_file.open(filename + ".asm");
+    if(!output_file.is_open()){
+        std::cerr << "failed to open the output file: " << filename << ".asm\n";
+        output_file.close();
+        return false;
+
+    }
+    result = _code_generator.generate_code(output_file, ast);
+    output_file.close();
+    if(!result){
+        return false;
+    }
+    std::cout << "generated " << filename << ".asm\n";
     return true;
 }

@@ -17,4 +17,6 @@ add_executable("enma"
 "enma_types.cpp"
 "parser.h"
 "parser.cpp"
+"code_generator.h"
+"code_generator.cpp"
 "enma.cpp")

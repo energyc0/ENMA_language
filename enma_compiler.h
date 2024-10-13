@@ -1,12 +1,14 @@
 #include <string>
 #include "lexer.h"
 #include "parser.h"
+#include "code_generator.h"
 
 class ENMA_compiler{
 private:
     std::string _executable_name;
     lexer _lexer;
     parser _parser;
+    code_generator _code_generator;
 private:
     void debug_tokens(const class std::list<class token_t>& tokens);
     void debug_ast(const class ast_node_t* node);

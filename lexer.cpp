@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include "lexer.h"
+#include "enma_types.h"
 
 const std::unordered_set<std::string> lexer::_keywords = {
         "let", "return," "if", "for", "while"

@@ -1,6 +1,6 @@
 #include <iostream>
-#include "enma_types.h"
 #include "parser.h"
+#include "enma_types.h"
 
 parsing_error::parsing_error(const char* msg, int line, int token) noexcept :
      _msg(msg), _line(line), _token(token) {}

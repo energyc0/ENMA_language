@@ -14,8 +14,8 @@ public:
 
 class token_storage{
 private:
-    std::list<token_t>& _tokens;
-    std::list<token_t>::iterator _iter;
+    std::list<class token_t>& _tokens;
+    std::list<class token_t>::iterator _iter;
     int _line_number = 1;
     int _token_number = 0;
 
