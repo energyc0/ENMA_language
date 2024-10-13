@@ -13,7 +13,8 @@ std::ostream& operator<<(std::ostream& os, const token_type_e& t){
         break;
     case token_type_e::PUNCTUATION:     os << "PUNCTUATION";
         break;
-    
+    case token_type_e::END:             os << "END";
+        break;
     default:
         os << "*undefined token type*";
         break;

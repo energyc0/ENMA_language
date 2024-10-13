@@ -15,4 +15,6 @@ add_executable("enma"
 "lexer.cpp"
 "enma_types.h"
 "enma_types.cpp"
+"parser.h"
+"parser.cpp"
 "enma.cpp")

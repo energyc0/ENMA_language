@@ -6,12 +6,13 @@ enum class token_type_e{
     IDENTIFIER,
     OPERATOR,
     KEYWORD,
-    PUNCTUATION
-
+    PUNCTUATION,
+    END
 };
 std::ostream& operator<<(std::ostream& os, const token_type_e& t);
 
 enum class operator_type_e{
+    END,
     ADD,
     SUB,
     DIV,
@@ -59,5 +60,12 @@ public:
     token_t(token_type_e t, int v) : _type(t), _val(v) {}
     token_t(const token_t& token) : _type(token._type), _val(token._val){}
     token_t(token_t&& token) : _type(token._type),_val(token._val){}
+
+    constexpr token_t& operator=(const token_t& t) {
+        _type = t._type;
+        _val = t._val;
+        return *this;
+    }
+
     virtual ~token_t(){}
 };

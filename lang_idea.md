@@ -10,12 +10,20 @@
 3. Keyword
 4. Punctuation
 
-**Operators**
-1. `+` Addition  
-2. `-` Substraction
-3. `/` Division
-4. `*` Multiplication
-5. `(`,  `)` Parentheses
+## Grammar
+
+    expression  : number
+                | identifier
+                | expression + expression
+                | expression - expression
+                | expression / expression
+                | expression * expression
+                | (expression)
+                | identifier = expression
+
+    number :    int constant
+    
+    identifier: string constant
 
 ## Syntax
 
