@@ -7,6 +7,7 @@ enum class token_type_e{
     OPERATOR,
     KEYWORD,
     PUNCTUATION,
+    NEW_LINE,
     END
 };
 std::ostream& operator<<(std::ostream& os, const token_type_e& t);

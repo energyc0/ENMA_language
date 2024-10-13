@@ -164,6 +164,7 @@ std::list<token_t> lexer::lexical_analysis(std::ifstream& file, bool& result){
             result = false;
             break;
         }
+        tokens.emplace_back(token_type_e::NEW_LINE,0);
     }
 
     return tokens;

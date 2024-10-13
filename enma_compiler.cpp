@@ -20,7 +20,7 @@ bool ENMA_compiler::process_input(const std::vector<const char*>& args){
 void ENMA_compiler::debug_tokens(const class std::list<class token_t>& tokens){
     std::cout << "Tokens debug:\n";
     for(const auto& i : tokens){
-        std::cout.width(20);
+        std::cout.width(25);
         std::cout.fill(' ');
         std::cout << std::left << i.get_type();
         std::cout << "->\t\t";
@@ -34,6 +34,8 @@ void ENMA_compiler::debug_tokens(const class std::list<class token_t>& tokens){
         case token_type_e::KEYWORD: std::cout << static_cast<keyword_type_e>(i.get_value());
             break;
         case token_type_e::PUNCTUATION:std::cout << static_cast<punctuation_type_e>(i.get_value());
+            break;
+        case token_type_e::NEW_LINE: std::cout << "\\n";
             break;
         default:
             break;
@@ -100,13 +102,14 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     }else{
         debug_tokens(tokens);
     }
+
     token_storage storage(tokens);
     auto ast = _parser.binary_expr(storage, result);
     if(!result){
         return false;
     }else{
         debug_ast(ast.get());
-        std::cout << "=" << ast->interpret_node();
+        std::cout << "=" << ast->interpret_node() << '\n';
     }
 
     input_file.close();

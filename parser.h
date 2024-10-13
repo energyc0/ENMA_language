@@ -1,31 +1,34 @@
 #include <memory>
 #include <list>
 
+class parsing_error {
+private:
+    std::string _msg;
+    int _line;
+    int _token;
+public:
+    explicit parsing_error(const char* msg, int line, int token) noexcept;
+
+    std::string what();
+};
+
 class token_storage{
 private:
     std::list<token_t>& _tokens;
     std::list<token_t>::iterator _iter;
-public:
-    token_storage(std::list<token_t>& tokens) : _tokens(tokens), _iter(tokens.begin()) {}
+    int _line_number = 1;
+    int _token_number = 0;
 
-    inline token_t get_current() noexcept{
-        if(_iter == _tokens.end()){
-            return token_t(token_type_e::END, 0);
-        }
-        return *_iter;
-    }
-    inline token_t get_next() noexcept {
-        if(_iter == _tokens.end() || ++_iter == _tokens.end()){
-            return token_t(token_type_e::END, 0);
-        }
-        return *_iter;
-    }
-    inline void next() noexcept{
-        if(_iter == _tokens.end()){
-            return;
-        }
-        ++_iter;
-    }
+    void skip_new_lines();
+public:
+    token_storage(std::list<token_t>& tokens);
+
+    constexpr inline int get_token_number()const noexcept{return _token_number;}
+    constexpr inline int get_line_number()const noexcept{return _line_number;}
+
+    token_t get_current() noexcept;
+    token_t get_next() noexcept ;
+    void next() noexcept;
 };
 
 enum class ast_node_type_e{
@@ -44,39 +47,24 @@ public:
     ast_node_type_e type;
     int val;
 
-    ast_node_t(): val(0), left(nullptr), right(nullptr), type(ast_node_type_e::END) {}
+    ast_node_t();
+    ast_node_t(int _val, ast_node_type_e _t,
+     const std::shared_ptr<ast_node_t>& _left, const std::shared_ptr<ast_node_t>& _right);
 
-    ast_node_t(int _val, ast_node_type_e _t, ast_node_t* _left, ast_node_t* _right) :
-     val(_val), left(_left), right(_right), type(_t) {}
+    ~ast_node_t();
 
-    ~ast_node_t() {
-        if(left)
-            left.reset();
-        if(right)
-            right.reset();
-    }
-
-    int interpret_node(){
-        switch(type){
-            case ast_node_type_e::NUM:  return val;
-            case ast_node_type_e::ADD:  return left->interpret_node() + right->interpret_node();
-            case ast_node_type_e::SUB:  return left->interpret_node() - right->interpret_node();
-            case ast_node_type_e::DIV:  return left->interpret_node() / right->interpret_node();
-            case ast_node_type_e::MUL:  return left->interpret_node() * right->interpret_node();
-            default:
-                std::cerr<<"undefined ast_node type\n";
-                break;
-        }
-        return -1;
-    }
+    int interpret_node();
 };
 
 class parser{
 private:
-    static ast_node_type_e reinterpret_arith_op(const token_t& t);
-    static int get_arith_op_precedence(ast_node_type_e op);
-    ast_node_t* get_primary_expr(token_storage& tokens);
-    ast_node_t* bin_expr_parse(token_storage& tokens, int prev_op_precedence);
+    token_storage* _tokens = nullptr;
+
+private:
+    ast_node_type_e reinterpret_arith_op(const token_t& t);
+    int get_arith_op_precedence(ast_node_type_e op);
+    std::shared_ptr<ast_node_t> get_primary_expr();
+    std::shared_ptr<ast_node_t> bin_expr_parse(int prev_op_precedence);
 public:
     std::shared_ptr<ast_node_t> binary_expr(token_storage& tokens, bool& result);
 };

@@ -15,6 +15,8 @@ std::ostream& operator<<(std::ostream& os, const token_type_e& t){
         break;
     case token_type_e::END:             os << "END";
         break;
+    case token_type_e::NEW_LINE:        os << "NEW_LINE";
+        break;
     default:
         os << "*undefined token type*";
         break;
