@@ -2,3 +2,5 @@
 /build
 *.em
 *.asm
+*.o
+my_output

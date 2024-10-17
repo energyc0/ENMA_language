@@ -15,6 +15,15 @@ bool ENMA_compiler::process_input(const std::vector<const char*>& args){
             return false;
         }
     }
+
+    std::string command = "nasm -f elf64 -o " + _executable_name + ".o ";
+    for(auto i : args){
+        std::string s(i);
+        command += s.substr(0, s.size()-2) + "asm ";
+    }
+    system(command.c_str());
+    command = "gcc -o " + _executable_name + " " + _executable_name + ".o -no-pie";
+    system(command.c_str());
     return true;
 }
 
@@ -96,7 +105,6 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     }else{
         std::cout << filename << " - compiling.\n";
     }
-    input_file.close();
 
     bool result;
     auto tokens = _lexer.lexical_analysis(input_file, result);
@@ -105,17 +113,22 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     }else{
         debug_tokens(tokens);
     }
+    input_file.close();
 
     token_storage storage(tokens);
     auto ast = _parser.binary_expr(storage, result);
     if(!result){
         return false;
+    }else{
+        auto temp_root = ast;
+        debug_ast(temp_root.get());
+        std::cout << '\n';
     }
-
+    
     std::ofstream output_file;
-    output_file.open(filename + ".asm");
+    output_file.open(filename.substr(0, filename.size() - 2) + "asm");
     if(!output_file.is_open()){
-        std::cerr << "failed to open the output file: " << filename << ".asm\n";
+        std::cerr << "failed to open the output file: " << filename.substr(0, filename.size() - 2) << "asm\n";
         output_file.close();
         return false;
 
@@ -125,6 +138,6 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     if(!result){
         return false;
     }
-    std::cout << "generated " << filename << ".asm\n";
+    std::cout << "generated " << filename.substr(0, filename.size() - 2) << "asm\n";
     return true;
 }
