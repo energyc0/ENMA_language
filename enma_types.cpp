@@ -97,6 +97,8 @@ std::ostream& operator<<(std::ostream& os, const keyword_type_e& t){
         break;
     case keyword_type_e::WHILE:     os << "while";
         break;
+    case keyword_type_e::PRINT:     os << "print";
+        break;
     default:
         os << "*undefined keyword type*";
         break;

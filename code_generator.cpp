@@ -20,7 +20,7 @@ void code_generator::output_preamble(){
             << "\tmov rbp, rsp\n\n";
 }
 
-void code_generator::output_ending(){
+void code_generator::output_postamble(){
     *_file  << "\n\tpop rbp\n"
             << "\tmov rax, 60\n"
             << "\tmov rdi, 0\n"
@@ -92,7 +92,9 @@ int code_generator::div_reg(int left, int right){
     return left;
 }
 
-void code_generator::print_value(int reg){
+void code_generator::print_reg(int reg){
+    if(_free_reg[reg])
+        throw unhandled_register_error("print_reg - undefined register storage", _registers[reg]);
     *_file  << "\n\tmov rdi, d_fmt\n"
             << "\tmov rsi, " << _registers[reg] << '\n'
             << "\tcall printf\n\n";
@@ -104,19 +106,31 @@ int code_generator::traverse_node(std::shared_ptr<ast_node_t>& node){
     if(node->left){
         left_reg = traverse_node(node->left);
     }
+    switch (node->type){
+    case ast_node_type_e::PRINT:
+        print_reg(left_reg);
+        if(node->right){
+            return traverse_node(node->right);
+        }
+        return -1;
+    case ast_node_type_e::END: throw std::runtime_error("ast_node_type_e == END");
+    default:
+        break;
+    }
     if(node->right){
         right_reg = traverse_node(node->right);
     }
 
     switch (node->type){
-        case ast_node_type_e::END: return -1;
         case ast_node_type_e::NUM: return mov_reg(find_free_reg(), node->val);
         case ast_node_type_e::ADD: return add_reg(left_reg,right_reg);
         case ast_node_type_e::SUB: return sub_reg(left_reg,right_reg);
         case ast_node_type_e::DIV: return div_reg(left_reg,right_reg);
         case ast_node_type_e::MUL: return mul_reg(left_reg,right_reg);
+        case ast_node_type_e::PRINT: throw std::runtime_error("ast_node_type_e == PRINT");
+        case ast_node_type_e::END: throw std::runtime_error("ast_node_type_e == END");
     default:
-        throw std::runtime_error("ast_node_type_e == END");
+        throw std::runtime_error("ast_node_type_e == undefined");
         break;
     }
     return -1;
@@ -128,10 +142,8 @@ bool code_generator::generate_code(std::ofstream& file, std::shared_ptr<ast_node
         output_preamble();
         if(root) {
             int reg = traverse_node(root);
-            if(reg != -1)
-                print_value(reg);
         }
-        output_ending();
+        output_postamble();
         return true;
     }catch(std::runtime_error& err){
         std::cerr << err.what() << '\n';

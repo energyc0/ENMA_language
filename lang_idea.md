@@ -12,6 +12,8 @@
 
 ## Grammar
 
+    statement: "print(" expression ");" 
+
     expression  : number
                 | identifier
                 | expression + expression

@@ -28,8 +28,8 @@ private:
     int sub_reg(int left, int right);
     int mul_reg(int left, int right);
     int div_reg(int left, int right);
-    void print_value(int val);
-    void output_ending();
+    void print_reg(int reg);
+    void output_postamble();
 
     int traverse_node(class std::shared_ptr<class ast_node_t>& node);
 public:

@@ -124,7 +124,7 @@ bool lexer::process_line(const std::string& line, std::list<token_t>& tokens){
                 }
                 break;
             case 'i':
-                if((i + 1 == n || isspace(line[i+1])) && line.substr(i,2) == "if"){
+                if((i + 1 == n || isspace(line[i+1] || line[i+1] == '(')) && line.substr(i,2) == "if"){
                     i+=2;
                     tokens.emplace_back(token_t(token_type_e::KEYWORD, static_cast<int>(keyword_type_e::IF)));
                 }else{
@@ -132,7 +132,7 @@ bool lexer::process_line(const std::string& line, std::list<token_t>& tokens){
                 }
                 break;
             case 'f':
-                if(i + 2 < n && (i + 3 == n || isspace(line[i+3])) && line.substr(i,3) == "for"){
+                if(i + 2 < n && (i + 3 == n || isspace(line[i+3] || line[i+3] == '(')) && line.substr(i,3) == "for"){
                     i+=3;
                     tokens.emplace_back(token_t(token_type_e::KEYWORD, static_cast<int>(keyword_type_e::FOR)));
                 }else{
@@ -140,11 +140,19 @@ bool lexer::process_line(const std::string& line, std::list<token_t>& tokens){
                 }
                 break;
             case 'w':
-                if(i + 4 < n && (i + 5 == n || isspace(line[i+5])) && line.substr(i,3) == "while"){
-                    i+=3;
+                if(i + 4 < n && (i + 5 == n || isspace(line[i+5]) || line[i+5] == '(') && line.substr(i,3) == "while"){
+                    i+=5;
                     tokens.emplace_back(token_t(token_type_e::KEYWORD, static_cast<int>(keyword_type_e::WHILE)));
                 }else{
                     tokens.emplace_back(token_t(token_type_e::IDENTIFIER, read_identifier(line, i)));
+                }
+                break;
+            case 'p':
+                if(i + 4 < n && (i + 5 == n || isspace(line[i+5]) || line[i+5] == '(') && line.substr(i,5) == "print"){
+                    i+=5;
+                    tokens.emplace_back(token_t(token_type_e::KEYWORD, static_cast<int>(keyword_type_e::PRINT)));
+                }else{
+                    tokens.emplace_back(token_t(token_type_e::IDENTIFIER, read_identifier(line, i)));    
                 }
                 break;
             default:

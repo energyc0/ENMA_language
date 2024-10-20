@@ -55,6 +55,14 @@ void ENMA_compiler::debug_tokens(const class std::list<class token_t>& tokens){
 }
 
 void ENMA_compiler::debug_ast(const ast_node_t* node){
+    switch (node->type)
+    {
+    case ast_node_type_e::PRINT: std::cout << "print ";
+        break;
+    default:
+        break;
+    }
+
     if(node->left){
         debug_ast(node->left.get());
     }
@@ -70,6 +78,8 @@ void ENMA_compiler::debug_ast(const ast_node_t* node){
     case ast_node_type_e::MUL: std::cout << "*";
         break;
     case ast_node_type_e::NUM: std::cout << node->val;
+        break;
+    case ast_node_type_e::PRINT: std::cout << "\n";
         break;
     default:
         break;
@@ -116,7 +126,7 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     input_file.close();
 
     token_storage storage(tokens);
-    auto ast = _parser.binary_expr(storage, result);
+    auto ast = _parser.generate_ast(storage, result);
     if(!result){
         return false;
     }else{

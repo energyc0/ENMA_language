@@ -46,7 +46,8 @@ enum class keyword_type_e{
     RETURN,
     IF,
     FOR,
-    WHILE
+    WHILE,
+    PRINT
 };
 std::ostream& operator<<(std::ostream& os, const keyword_type_e& t);
 
