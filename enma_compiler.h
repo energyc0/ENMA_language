@@ -3,6 +3,14 @@
 #include "parser.h"
 #include "code_generator.h"
 
+class ENMA_debugger{
+private:
+    static char reinterpret_arith_op(ast_node_type t);
+public:
+    static void debug_tokens(const class std::list<class token_t>& tokens);
+    static void debug_ast(const class std::shared_ptr<class ast_node>& node);
+};
+
 class ENMA_compiler{
 private:
     std::string _executable_name;
@@ -10,8 +18,6 @@ private:
     parser _parser;
     code_generator _code_generator;
 private:
-    void debug_tokens(const class std::list<class token_t>& tokens);
-    void debug_ast(const class ast_node_t* node);
     bool process_input_file(const std::string& filename);
 public:
     ENMA_compiler(const char* exe_name);

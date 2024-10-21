@@ -1,5 +1,6 @@
 #include <memory>
 #include <list>
+#include "ast.h"
 
 class token_storage{
 private:
@@ -32,43 +33,17 @@ public:
     std::string what();
 };
 
-enum class ast_node_type_e{
-    END,
-    NUM,
-    ADD,
-    SUB,
-    DIV,
-    MUL,
-    PRINT
-};
-
-class ast_node_t{
-public:
-    std::shared_ptr<ast_node_t> left;
-    std::shared_ptr<ast_node_t> right;
-    ast_node_type_e type;
-    int val;
-
-    ast_node_t();
-    ast_node_t(int _val, ast_node_type_e _t,
-     const std::shared_ptr<ast_node_t>& _left, const std::shared_ptr<ast_node_t>& _right);
-
-    ~ast_node_t();
-
-    int interpret_node();
-};
-
 class parser{
 private:
     token_storage* _tokens = nullptr;
 
 private:
-    ast_node_type_e reinterpret_arith_op(const token_t& t);
-    int get_arith_op_precedence(ast_node_type_e op);
-    std::shared_ptr<ast_node_t> get_primary_expr();
-    std::shared_ptr<ast_node_t> bin_expr_parse(int prev_op_precedence);
-    std::shared_ptr<ast_node_t> binary_expr();
-    std::shared_ptr<ast_node_t> print_statement();
+    operator_type reinterpret_arith_op(const class token_t& t);
+    int get_arith_op_precedence(operator_type op);
+    std::shared_ptr<expression> get_primary_expr();
+    std::shared_ptr<expression> bin_expr_parse(int prev_op_precedence);
+    std::shared_ptr<expression> binary_expr();
+    std::shared_ptr<print_statement> parse_print();
 public:
-    std::shared_ptr<ast_node_t> generate_ast(token_storage& tokens, bool& result);
+    std::shared_ptr<statement> generate_ast(token_storage& tokens, bool& result);
 };

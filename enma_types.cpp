@@ -1,21 +1,21 @@
 #include "enma_types.h"
 
-std::ostream& operator<<(std::ostream& os, const token_type_e& t){
+std::ostream& operator<<(std::ostream& os, const token_type& t){
     switch (t)
     {
-    case token_type_e::CONSTANT:        os << "CONSTANT";
+    case token_type::CONSTANT:        os << "CONSTANT";
         break;
-    case token_type_e::IDENTIFIER:      os << "IDENTIFIER";
+    case token_type::IDENTIFIER:      os << "IDENTIFIER";
         break;
-    case token_type_e::OPERATOR:        os << "OPERATOR";
+    case token_type::OPERATOR:        os << "OPERATOR";
         break;
-    case token_type_e::KEYWORD:         os << "KEYWORD";
+    case token_type::KEYWORD:         os << "KEYWORD";
         break;
-    case token_type_e::PUNCTUATION:     os << "PUNCTUATION";
+    case token_type::PUNCTUATION:     os << "PUNCTUATION";
         break;
-    case token_type_e::END:             os << "END";
+    case token_type::END:             os << "END";
         break;
-    case token_type_e::NEW_LINE:        os << "NEW_LINE";
+    case token_type::NEW_LINE:        os << "NEW_LINE";
         break;
     default:
         os << "*undefined token type*";
@@ -24,36 +24,36 @@ std::ostream& operator<<(std::ostream& os, const token_type_e& t){
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const operator_type_e& t){
+std::ostream& operator<<(std::ostream& os, const operator_type& t){
     switch (t)
     {
-    case operator_type_e::ADD:              os << "+";
+    case operator_type::ADD:              os << "+";
         break;
-    case operator_type_e::ASSIGN:           os << "=";
+    case operator_type::ASSIGN:           os << "=";
         break;
-    case operator_type_e::DIV:              os << "/";
+    case operator_type::DIV:              os << "/";
         break;
-    case operator_type_e::EQUAL:            os << "==";
+    case operator_type::EQUAL:            os << "==";
         break;
-    case operator_type_e::GREATER:          os << ">";
+    case operator_type::GREATER:          os << ">";
         break;
-    case operator_type_e::GREATER_EQUAL:    os << ">=";
+    case operator_type::GREATER_EQUAL:    os << ">=";
         break;
-    case operator_type_e::LESS:             os << "<";
+    case operator_type::LESS:             os << "<";
         break;
-    case operator_type_e::LESS_EQUAl:       os << "<=";
+    case operator_type::LESS_EQUAl:       os << "<=";
         break;
-    case operator_type_e::LPAR:             os << "(";
+    case operator_type::LPAR:             os << "(";
         break;
-    case operator_type_e::MUL:              os << "*";
+    case operator_type::MUL:              os << "*";
         break;
-    case operator_type_e::NEQUAL:           os << "!=";
+    case operator_type::NEQUAL:           os << "!=";
         break;
-    case operator_type_e::NOT:              os << "!";
+    case operator_type::NOT:              os << "!";
         break;
-    case operator_type_e::RPAR:             os << ")";
+    case operator_type::RPAR:             os << ")";
         break;
-    case operator_type_e::SUB:              os << "-";
+    case operator_type::SUB:              os << "-";
         break;
     default:
         os << "*undefined operator type*";
@@ -62,20 +62,20 @@ std::ostream& operator<<(std::ostream& os, const operator_type_e& t){
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const punctuation_type_e& t){
+std::ostream& operator<<(std::ostream& os, const punctuation_type& t){
     switch (t)
     {
-    case punctuation_type_e::ARROW:     os << "=>";
+    case punctuation_type::ARROW:     os << "=>";
         break;
-    case punctuation_type_e::COLON:     os << ":";
+    case punctuation_type::COLON:     os << ":";
         break;
-    case punctuation_type_e::COMMA:     os << ",";
+    case punctuation_type::COMMA:     os << ",";
         break;
-    case punctuation_type_e::LBRACE:    os << "{";
+    case punctuation_type::LBRACE:    os << "{";
         break;
-    case punctuation_type_e::RBRACE:    os << "}";
+    case punctuation_type::RBRACE:    os << "}";
         break;
-    case punctuation_type_e::SEMICOLON: os << ";";
+    case punctuation_type::SEMICOLON: os << ";";
         break;
     default:
         os << "*undefined punctuation type*";
@@ -84,20 +84,20 @@ std::ostream& operator<<(std::ostream& os, const punctuation_type_e& t){
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const keyword_type_e& t){
+std::ostream& operator<<(std::ostream& os, const keyword_type& t){
     switch (t)
     {
-    case keyword_type_e::LET:       os << "let";
+    case keyword_type::LET:       os << "let";
         break;
-    case keyword_type_e::RETURN:    os << "return";
+    case keyword_type::RETURN:    os << "return";
         break;
-    case keyword_type_e::IF:        os << "if";
+    case keyword_type::IF:        os << "if";
         break;
-    case keyword_type_e::FOR:       os << "for";
+    case keyword_type::FOR:       os << "for";
         break;
-    case keyword_type_e::WHILE:     os << "while";
+    case keyword_type::WHILE:     os << "while";
         break;
-    case keyword_type_e::PRINT:     os << "print";
+    case keyword_type::PRINT:     os << "print";
         break;
     default:
         os << "*undefined keyword type*";

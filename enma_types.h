@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-enum class token_type_e{
+enum class token_type{
     CONSTANT,
     IDENTIFIER,
     OPERATOR,
@@ -10,9 +10,9 @@ enum class token_type_e{
     NEW_LINE,
     END
 };
-std::ostream& operator<<(std::ostream& os, const token_type_e& t);
+std::ostream& operator<<(std::ostream& os, const token_type& t);
 
-enum class operator_type_e{
+enum class operator_type{
     END,
     ADD,
     SUB,
@@ -29,9 +29,9 @@ enum class operator_type_e{
     LESS_EQUAl,
     NOT
 };
-std::ostream& operator<<(std::ostream& os, const operator_type_e& t);
+std::ostream& operator<<(std::ostream& os, const operator_type& t);
 
-enum class punctuation_type_e{
+enum class punctuation_type{
     COLON,
     SEMICOLON,
     COMMA,
@@ -39,9 +39,9 @@ enum class punctuation_type_e{
     RBRACE,
     ARROW   //=>
 };
-std::ostream& operator<<(std::ostream& os, const punctuation_type_e& t);
+std::ostream& operator<<(std::ostream& os, const punctuation_type& t);
 
-enum class keyword_type_e{
+enum class keyword_type{
     LET,
     RETURN,
     IF,
@@ -49,17 +49,17 @@ enum class keyword_type_e{
     WHILE,
     PRINT
 };
-std::ostream& operator<<(std::ostream& os, const keyword_type_e& t);
+std::ostream& operator<<(std::ostream& os, const keyword_type& t);
 
 class token_t{
 protected:
-    token_type_e _type;
+    token_type _type;
     int _val;
 public:
-    inline token_type_e get_type() const noexcept {return _type;}
+    inline token_type get_type() const noexcept {return _type;}
     inline int get_value() const noexcept {return _val;}
 
-    token_t(token_type_e t, int v) : _type(t), _val(v) {}
+    token_t(token_type t, int v) : _type(t), _val(v) {}
     token_t(const token_t& token) : _type(token._type), _val(token._val){}
     token_t(token_t&& token) : _type(token._type),_val(token._val){}
 

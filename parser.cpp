@@ -1,6 +1,5 @@
 #include <iostream>
 #include "parser.h"
-#include "enma_types.h"
 
 parsing_error::parsing_error(const char* msg, const token_storage& storage) noexcept :
      _msg(msg), _line(storage.get_line_number()), _token(storage.get_token_number()) {}
@@ -15,14 +14,14 @@ token_storage::token_storage(std::list<token_t>& tokens) : _tokens(tokens), _ite
 
 token_t token_storage::get_current() noexcept{
     if(_iter == _tokens.end()){
-        return token_t(token_type_e::END, 0);
+        return token_t(token_type::END, 0);
     }
     return *_iter;
 }
 token_t token_storage::get_next() noexcept {
     next();
     if(_iter == _tokens.end()){
-        return token_t(token_type_e::END, 0);
+        return token_t(token_type::END, 0);
     }
     return *_iter;
 }
@@ -37,83 +36,55 @@ void token_storage::next() noexcept{
 
 void token_storage::skip_new_lines(){
     _prev_line = _line_number;
-    while(_iter != _tokens.end() && _iter->get_type() == token_type_e::NEW_LINE){
+    while(_iter != _tokens.end() && _iter->get_type() == token_type::NEW_LINE){
         _token_number = 1;
         _line_number++;
          _iter++;
     }
 }
 
-ast_node_t::ast_node_t(): val(0), left(nullptr), right(nullptr), type(ast_node_type_e::END) {}
-
-ast_node_t::ast_node_t(int _val, ast_node_type_e _t, const std::shared_ptr<ast_node_t>& _left, const std::shared_ptr<ast_node_t>& _right) :
- val(_val), left(_left), right(_right), type(_t) {}
-
-ast_node_t::~ast_node_t() {
-    if(left)
-        left.reset();
-    if(right)
-        right.reset();
-}
-
-int ast_node_t::interpret_node(){
-    switch(type){
-        case ast_node_type_e::NUM:  return val;
-        case ast_node_type_e::ADD:  return left->interpret_node() + right->interpret_node();
-        case ast_node_type_e::SUB:  return left->interpret_node() - right->interpret_node();
-        case ast_node_type_e::DIV:  return left->interpret_node() / right->interpret_node();
-        case ast_node_type_e::MUL:  return left->interpret_node() * right->interpret_node();
+operator_type parser::reinterpret_arith_op(const token_t& t){
+    if(t.get_type() == token_type::PUNCTUATION && t.get_value() == static_cast<int>(punctuation_type::SEMICOLON)){
+        return operator_type::END;
+    }else if(t.get_type() != token_type::OPERATOR){
+        throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
+    }
+    switch (static_cast<operator_type>(t.get_value())){
+        case operator_type::ADD:
+        case operator_type::SUB:
+        case operator_type::MUL:
+        case operator_type::DIV:
+            return static_cast<operator_type>(t.get_value());
         default:
-            std::cerr<<"undefined ast_node type\n";
-            break;
+            throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
     }
-    return -1;
 }
 
-ast_node_type_e parser::reinterpret_arith_op(const token_t& t){
-    if(t.get_type() == token_type_e::END || t.get_type() == token_type_e::PUNCTUATION){
-        return ast_node_type_e::END;
-    }else if(t.get_type() != token_type_e::OPERATOR){
-        throw parsing_error("syntax error\noperator expected\n", *_tokens);
-    }
-    switch (static_cast<operator_type_e>(t.get_value())){
-        case operator_type_e::ADD: return ast_node_type_e::ADD;
-        case operator_type_e::SUB: return ast_node_type_e::SUB;
-        case operator_type_e::DIV: return ast_node_type_e::DIV;
-        case operator_type_e::MUL: return ast_node_type_e::MUL;
-            break;
-        default:
-            throw parsing_error("syntax error\nundefined operator\n", *_tokens);
-            break;
-    }
-    return ast_node_type_e::END;
-}
-
-int parser::get_arith_op_precedence(ast_node_type_e op){
+int parser::get_arith_op_precedence(operator_type op){
     switch (op){
-        case ast_node_type_e::DIV:
-        case ast_node_type_e::MUL:
+        case operator_type::DIV:
+        case operator_type::MUL:
             return 100;
-        case ast_node_type_e::ADD:
-        case ast_node_type_e::SUB:
+        case operator_type::ADD:
+        case operator_type::SUB:
             return 10;
-        case ast_node_type_e::END:
+        case operator_type::END:
             return 0;
         default:
-            throw parsing_error("syntax error\nexpected arithmetic operation\n", *_tokens);
+            throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
             break;
     }
     return -1;
 }
 
-std::shared_ptr<ast_node_t> parser::get_primary_expr(){
+std::shared_ptr<expression> parser::get_primary_expr(){
     auto t = _tokens->get_current();
     switch(t.get_type()){
-        case token_type_e::CONSTANT:
-            return std::shared_ptr<ast_node_t>(new ast_node_t(t.get_value(), ast_node_type_e::NUM, nullptr, nullptr));
-        case token_type_e::END:
-        case token_type_e::PUNCTUATION:
-            return std::shared_ptr<ast_node_t>(new ast_node_t(t.get_value(), ast_node_type_e::END, nullptr, nullptr));
+        case token_type::CONSTANT:
+            return std::make_shared<number_expression>(t.get_value());
+        case token_type::END:
+        case token_type::PUNCTUATION:
+            return nullptr;
         default:
             throw parsing_error("syntax error\nprimary expression expected\n", *_tokens);
         break;
@@ -121,42 +92,43 @@ std::shared_ptr<ast_node_t> parser::get_primary_expr(){
     return nullptr;
 }
 
-std::shared_ptr<ast_node_t> parser::bin_expr_parse(int prev_op_precedence){
+std::shared_ptr<expression> parser::bin_expr_parse(int prev_op_precedence){
     auto left = get_primary_expr();
-    if(left->type == ast_node_type_e::END)
+    if(!left)
         return left;
 
-    std::shared_ptr<ast_node_t> right = nullptr;
+    std::shared_ptr<expression> right = nullptr;
     auto token = _tokens->get_next();
     while(get_arith_op_precedence(reinterpret_arith_op(token)) > prev_op_precedence){
         _tokens->next();
         right = bin_expr_parse(get_arith_op_precedence(reinterpret_arith_op(token)));
 
-        left = std::shared_ptr<ast_node_t>(new ast_node_t(0, reinterpret_arith_op(token), left, right));
+        left = std::static_pointer_cast<expression>(std::make_shared<binary_expression>(reinterpret_arith_op(token), left, right));
         token = _tokens->get_current();
-        if(token.get_type() == token_type_e::END){
+        if(token.get_type() == token_type::PUNCTUATION && token.get_value() == static_cast<int>(punctuation_type::SEMICOLON)){
             break;
         }
     }
     return left;
 }
 
-std::shared_ptr<ast_node_t> parser::generate_ast(token_storage& tokens, bool& result){
+std::shared_ptr<statement> parser::generate_ast(token_storage& tokens, bool& result){
     try{
         _tokens = &tokens;
         
         auto token = tokens.get_current();
-        if(token.get_type() == token_type_e::END)
+        if(token.get_type() == token_type::END)
             return nullptr;
         
-        auto root = print_statement();
+        auto root = parse_print();
         auto node = root;
 
         token = tokens.get_current();
-        while(token.get_type() == token_type_e::KEYWORD &&
-         token.get_value() == static_cast<int>(keyword_type_e::PRINT)){
-            node->right = print_statement();
-            node = node->right;
+        while(token.get_type() == token_type::KEYWORD &&
+         token.get_value() == static_cast<int>(keyword_type::PRINT)){
+            node->set_next(parse_print());
+            const auto temp = std::static_pointer_cast<print_statement>(node->get_next());
+            node = temp;
             token = tokens.get_current();
         }
         result = true;
@@ -169,15 +141,15 @@ std::shared_ptr<ast_node_t> parser::generate_ast(token_storage& tokens, bool& re
     return nullptr;
 }
 
-std::shared_ptr<ast_node_t> parser::print_statement(){
+std::shared_ptr<print_statement> parser::parse_print(){
     auto token = _tokens->get_current();
-    if(token.get_type() != token_type_e::KEYWORD ||
-    token.get_value() != static_cast<int>(keyword_type_e::PRINT)){
-        throw parsing_error("syntax error\nprint expected\n", *_tokens);
+    if(token.get_type() != token_type::KEYWORD ||
+    token.get_value() != static_cast<int>(keyword_type::PRINT)){
+        throw parsing_error("print keyword expected\n", *_tokens);
     }
     //token = _tokens->get_next();
-    //if(token.get_type() != token_type_e::OPERATOR || 
-    //token.get_value() != static_cast<int>(operator_type_e::LPAR)){
+    //if(token.get_type() != token_type::OPERATOR || 
+    //token.get_value() != static_cast<int>(operator_type::LPAR)){
     //    throw parsing_error("syntax error\nleft parenthesis expected\n", *_tokens);
     //}
     _tokens->next();
@@ -185,18 +157,18 @@ std::shared_ptr<ast_node_t> parser::print_statement(){
     auto expr = binary_expr();
 
     token = _tokens->get_current();
-    //if(token.get_type() != token_type_e::OPERATOR || 
-    //token.get_value() != static_cast<int>(operator_type_e::RPAR)){
+    //if(token.get_type() != token_type::OPERATOR || 
+    //token.get_value() != static_cast<int>(operator_type::RPAR)){
     //    throw parsing_error("syntax error\nright parenthesis expected\n", *_tokens);
     //}
-    if(token.get_type() != token_type_e::PUNCTUATION || 
-    token.get_value() != static_cast<int>(punctuation_type_e::SEMICOLON)){
+    if(token.get_type() != token_type::PUNCTUATION || 
+    token.get_value() != static_cast<int>(punctuation_type::SEMICOLON)){
         throw parsing_error("syntax error\nsemicolon expected\n", *_tokens);
     }
     _tokens->next();
-    return std::make_shared<ast_node_t>(0, ast_node_type_e::PRINT, expr, nullptr);
+    return std::make_shared<print_statement>(expr);
 }
 
-std::shared_ptr<ast_node_t> parser::binary_expr(){
-    return bin_expr_parse(parser::get_arith_op_precedence(ast_node_type_e::END));
+std::shared_ptr<expression> parser::binary_expr(){
+    return bin_expr_parse(parser::get_arith_op_precedence(operator_type::END));
 }

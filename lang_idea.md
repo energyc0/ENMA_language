@@ -12,16 +12,22 @@
 
 ## Grammar
 
-    statement: "print(" expression ");" 
+    statements:   statement
+                | statement statements
+                ;
+
+    statement:    "print" expression
+                | "let" identifier "=" expression 
+                ; 
 
     expression  : number
                 | identifier
-                | expression + expression
-                | expression - expression
-                | expression / expression
-                | expression * expression
-                | (expression)
-                | identifier = expression
+                | expression "+" expression
+                | expression "-" expression
+                | expression "/" expression
+                | expression "*" expression
+                | "("expression")"
+                | identifier "=" expression
 
     number :    int constant
     

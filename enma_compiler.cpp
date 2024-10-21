@@ -3,7 +3,8 @@
 #include <vector>
 #include <iomanip>
 #include "enma_compiler.h"
-#include "enma_types.h"
+
+extern std::unique_ptr<symbol_table> global_sym_table;
 
 ENMA_compiler::ENMA_compiler(const char* exe_name): _executable_name(exe_name){}
 
@@ -27,7 +28,7 @@ bool ENMA_compiler::process_input(const std::vector<const char*>& args){
     return true;
 }
 
-void ENMA_compiler::debug_tokens(const class std::list<class token_t>& tokens){
+void ENMA_debugger::debug_tokens(const class std::list<class token_t>& tokens){
     std::cout << "Tokens debug:\n";
     for(const auto& i : tokens){
         std::cout.width(25);
@@ -35,17 +36,17 @@ void ENMA_compiler::debug_tokens(const class std::list<class token_t>& tokens){
         std::cout << std::left << i.get_type();
         std::cout << "->\t\t";
         switch (i.get_type()){
-        case token_type_e::CONSTANT: std::cout << i.get_value();
+        case token_type::CONSTANT: std::cout << i.get_value();
             break;
-        case token_type_e::IDENTIFIER: std::cout << _lexer.get_identifier(i.get_value());
+        case token_type::IDENTIFIER: std::cout << global_sym_table->get_identifier(i.get_value());
             break;
-        case token_type_e::OPERATOR: std::cout << static_cast<operator_type_e>(i.get_value());
+        case token_type::OPERATOR: std::cout << static_cast<operator_type>(i.get_value());
             break;
-        case token_type_e::KEYWORD: std::cout << static_cast<keyword_type_e>(i.get_value());
+        case token_type::KEYWORD: std::cout << static_cast<keyword_type>(i.get_value());
             break;
-        case token_type_e::PUNCTUATION:std::cout << static_cast<punctuation_type_e>(i.get_value());
+        case token_type::PUNCTUATION:std::cout << static_cast<punctuation_type>(i.get_value());
             break;
-        case token_type_e::NEW_LINE: std::cout << "\\n";
+        case token_type::NEW_LINE: std::cout << "\\n";
             break;
         default:
             break;
@@ -54,39 +55,43 @@ void ENMA_compiler::debug_tokens(const class std::list<class token_t>& tokens){
     }
 }
 
-void ENMA_compiler::debug_ast(const ast_node_t* node){
-    switch (node->type)
-    {
-    case ast_node_type_e::PRINT: std::cout << "print ";
-        break;
-    default:
-        break;
+char ENMA_debugger::reinterpret_arith_op(ast_node_type t){
+    switch (t){
+        case ast_node_type::ADD: return '+';
+        case ast_node_type::SUB: return '-';
+        case ast_node_type::DIV: return '/';
+        case ast_node_type::MUL: return '*';
+        default:
+            return ' ';
     }
+}
 
-    if(node->left){
-        debug_ast(node->left.get());
-    }
-
-    switch (node->type)
-    {
-    case ast_node_type_e::ADD: std::cout << "+";
-        break;
-    case ast_node_type_e::SUB: std::cout << "-";
-        break;
-    case ast_node_type_e::DIV: std::cout << "/";
-        break;
-    case ast_node_type_e::MUL: std::cout << "*";
-        break;
-    case ast_node_type_e::NUM: std::cout << node->val;
-        break;
-    case ast_node_type_e::PRINT: std::cout << "\n";
-        break;
-    default:
-        break;
-    }
-
-    if(node->right){
-        debug_ast(node->right.get());
+void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node){
+    switch (node->get_type()){
+        case ast_node_type::PRINT: {
+            std::cout << "print ";
+            const auto& print_stat = std::static_pointer_cast<print_statement>(node);
+            debug_ast(print_stat->get_expression());
+            std::cout << '\n';
+            if(print_stat->get_next()) debug_ast(print_stat->get_next());
+            break;
+        }
+        case ast_node_type::ADD:
+        case ast_node_type::SUB:
+        case ast_node_type::DIV:
+        case ast_node_type::MUL:{
+            const auto& bin_expr = std::static_pointer_cast<binary_expression>(node);
+            debug_ast(bin_expr->get_left());
+            std::cout << reinterpret_arith_op(bin_expr->get_type());
+            debug_ast(bin_expr->get_right());
+            break;
+        }
+        case ast_node_type::NUM:{
+         std::cout << std::static_pointer_cast<number_expression>(node)->get_number();
+            break;
+        }
+        default:
+            break;
     }
 }
 
@@ -121,7 +126,7 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
     if(!result){
         return false;
     }else{
-        debug_tokens(tokens);
+        ENMA_debugger::debug_tokens(tokens);
     }
     input_file.close();
 
@@ -131,7 +136,7 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
         return false;
     }else{
         auto temp_root = ast;
-        debug_ast(temp_root.get());
+        ENMA_debugger::debug_ast(temp_root);
         std::cout << '\n';
     }
     
