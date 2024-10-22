@@ -1,7 +1,6 @@
 #include <string>
 #include "lexer.h"
 #include "parser.h"
-#include "code_generator.h"
 
 class ENMA_debugger{
 private:
@@ -16,7 +15,7 @@ private:
     std::string _executable_name;
     lexer _lexer;
     parser _parser;
-    code_generator _code_generator;
+
 private:
     bool process_input_file(const std::string& filename);
 public:

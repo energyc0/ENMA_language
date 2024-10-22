@@ -3,6 +3,7 @@
 #include <vector>
 #include <iomanip>
 #include "enma_compiler.h"
+#include "code_generator.h"
 
 extern std::unique_ptr<symbol_table> global_sym_table;
 
@@ -140,16 +141,15 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
         std::cout << '\n';
     }
     
-    std::ofstream output_file;
-    output_file.open(filename.substr(0, filename.size() - 2) + "asm");
-    if(!output_file.is_open()){
-        std::cerr << "failed to open the output file: " << filename.substr(0, filename.size() - 2) << "asm\n";
-        output_file.close();
-        return false;
+    try{
+        code_generator code_gen(filename.substr(0, filename.size() - 2) + "asm");
+        result = code_gen.generate_code(ast);
 
+    }catch(const std::runtime_error& err){
+        std::cerr << err.what();
+        result = false;
     }
-    result = _code_generator.generate_code(output_file, ast);
-    output_file.close();
+
     if(!result){
         return false;
     }

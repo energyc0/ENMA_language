@@ -1,6 +1,8 @@
 #include <memory>
 #include "enma_types.h"
 
+class code_generator;
+
 enum class ast_node_type{
     END,
     NUM,
@@ -31,6 +33,8 @@ protected:
 public:
     virtual ~ast_node();
     constexpr inline ast_node_type get_type()const noexcept{ return _type; }
+
+    virtual int accept_visitor(code_generator& visitor) const = 0;
 };
 
 
@@ -50,6 +54,8 @@ public:
     virtual ~expression();
 
     expression& operator=(const expression& expr);
+
+    virtual int accept_visitor(code_generator& visitor) const = 0;
 };
 
 class number_expression : public expression{
@@ -58,6 +64,9 @@ public:
     number_expression(int num);
     inline void set_number(int num) noexcept {_val = num;}
     constexpr inline int get_number() const noexcept {return _val;}
+
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };
 
 class identifier_expression : public expression{
@@ -68,6 +77,9 @@ public:
     identifier_expression(int id);
     void set_id(int id);
     int get_id() const;
+
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };
 /*
 class assignment_expression : public expression{
@@ -98,6 +110,8 @@ public:
     inline std::shared_ptr<expression> get_right() const noexcept{return std::static_pointer_cast<expression>(_right);}
 
     binary_expression& operator=(const binary_expression& expr);
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };
 
 class statement : public ast_node{
@@ -119,7 +133,7 @@ public:
     }
     void set_next(const std::shared_ptr<statement>& next);
 
-    //virtual int output_assembly() const = 0;
+    virtual int accept_visitor(code_generator& visitor) const = 0;
 };
 
 class print_statement : public statement{
@@ -137,10 +151,11 @@ public:
 
     print_statement& operator=(const print_statement& stat);
 
-    //virtual int output_assembly() const;
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };
 
 class variable_declaration : public statement{
 public:
-//virtual int output_assembly() const{return 0;}
+
 };

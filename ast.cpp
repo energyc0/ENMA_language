@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "lexer.h"
+#include "code_generator.h"
 
 extern std::unique_ptr<symbol_table> global_sym_table;
 
@@ -161,6 +162,16 @@ print_statement& print_statement::operator=(const print_statement& stat){
     return *this;
 }
 
-//int print_statement::output_assembly() const{
-//
-//}
+int number_expression::accept_visitor(code_generator& visitor) const{
+    return visitor.node_interaction(this);
+}
+int identifier_expression::accept_visitor(code_generator& visitor) const{
+    return visitor.node_interaction(this);
+}
+int binary_expression::accept_visitor(code_generator& visitor) const{
+    return visitor.node_interaction(this);
+}
+int print_statement::accept_visitor(code_generator& visitor) const{
+    visitor.node_interaction(this);
+    return 0;
+}

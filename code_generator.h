@@ -41,7 +41,7 @@ private:
     std::array<code_register, _registers_count> _registers = {
         "r8","r9","r10","r12","r13","r14","r15"
     };
-    std::ofstream* _file;
+    std::ofstream _file;
 
     template<class T, class... arg>
     void check_valid_storage(T a, arg ...args) const{
@@ -64,11 +64,19 @@ private:
     void print_reg(int reg);
     void output_postamble();
 
-    int traverse_node(const class std::shared_ptr<class ast_node>& node);
-    int traverse_node(const class std::shared_ptr<class statement>& node);
-    int traverse_node(const class std::shared_ptr<class expression>& node);
+    int node_interaction(const class number_expression* expr);
+    int node_interaction(const class identifier_expression* expr);
+    int node_interaction(const class binary_expression* expr);
+    void node_interaction(const class print_statement* expr);
+
+    friend class number_expression;
+    friend class identifier_expression;
+    friend class binary_expression;
+    friend class print_statement;
 public:
-    code_generator() : _file(nullptr) {}
-    bool generate_code(typename std::ofstream& file, class std::shared_ptr<class statement>& root);
-    ~code_generator(){}
+    code_generator(const std::string& output_filename);
+
+    bool generate_code(const std::shared_ptr<class statement>& root);
+
+    ~code_generator();
 };
