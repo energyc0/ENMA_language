@@ -1,7 +1,8 @@
 #include <memory>
-#include "enma_types.h"
 
 class code_generator;
+enum class operator_type;
+enum class arithmetical_operation;
 
 enum class ast_node_type{
     END,
@@ -95,9 +96,9 @@ public:
 
 class binary_expression : public expression{
 private:
-    ast_node_type convert_operation(operator_type op) const;
+    ast_node_type convert_operation(arithmetical_operation op) const;
 public:
-    binary_expression(operator_type op,
+    binary_expression(arithmetical_operation op,
      const std::shared_ptr<expression>& left = std::shared_ptr<expression>(),
       const std::shared_ptr<expression>& right = std::shared_ptr<expression>());
     

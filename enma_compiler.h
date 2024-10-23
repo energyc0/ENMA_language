@@ -1,11 +1,13 @@
 #include <string>
 #include "parser.h"
 
+enum class ast_node_type;
+
 class ENMA_debugger{
 private:
     static char reinterpret_arith_op(ast_node_type t);
 public:
-    static void debug_tokens(const class std::list<class token_t>& tokens);
+    static void debug_tokens(const class std::list<class std::shared_ptr<class token>>& tokens);
     static void debug_ast(const class std::shared_ptr<class ast_node>& node);
 };
 

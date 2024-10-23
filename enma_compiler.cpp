@@ -3,6 +3,8 @@
 #include <vector>
 #include <iomanip>
 #include "enma_compiler.h"
+#include "token_types.h"
+#include "ast.h"
 #include "lexer.h"
 #include "code_generator.h"
 
@@ -30,23 +32,23 @@ bool ENMA_compiler::process_input(const std::vector<const char*>& args){
     return true;
 }
 
-void ENMA_debugger::debug_tokens(const class std::list<class token_t>& tokens){
+void ENMA_debugger::debug_tokens(const class std::list<std::shared_ptr<token>>& tokens){
     std::cout << "Tokens debug:\n";
     for(const auto& i : tokens){
         std::cout.width(25);
         std::cout.fill(' ');
-        std::cout << std::left << i.get_type();
+        std::cout << std::left << i->get_type();
         std::cout << "->\t\t";
-        switch (i.get_type()){
-        case token_type::CONSTANT: std::cout << i.get_value();
+        switch (i->get_type()){
+        case token_type::CONSTANT: std::cout << static_cast<const token_constant&>(*i).get_value();
             break;
-        case token_type::IDENTIFIER: std::cout << global_sym_table->get_identifier(i.get_value());
+        case token_type::IDENTIFIER: std::cout << static_cast<const token_identifier&>(*i).get_identifier();
             break;
-        case token_type::OPERATOR: std::cout << static_cast<operator_type>(i.get_value());
+        case token_type::OPERATOR: std::cout << static_cast<const token_operator&>(*i).get_operator();
             break;
-        case token_type::KEYWORD: std::cout << static_cast<keyword_type>(i.get_value());
+        case token_type::KEYWORD: std::cout << static_cast<const token_keyword&>(*i).get_keyword();
             break;
-        case token_type::PUNCTUATION:std::cout << static_cast<punctuation_type>(i.get_value());
+        case token_type::PUNCTUATION:std::cout << static_cast<const token_punctuation&>(*i).get_punctuation();
             break;
         case token_type::NEW_LINE: std::cout << "\\n";
             break;

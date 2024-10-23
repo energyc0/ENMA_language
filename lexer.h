@@ -40,11 +40,11 @@ private:
     std::ifstream _file;
 
     int read_number(const std::string& line, int& idx) const noexcept;
-    int read_identifier(const std::string& line, int& idx) noexcept;
-    void process_line(const std::string& line, std::list<class token_t>& tokens);
+    std::string read_identifier(const std::string& line, int& idx) noexcept;
+    void process_line(const std::string& line, std::list<class std::shared_ptr<class token>>& tokens);
 public:
     lexer(const std::string& input_file);
     ~lexer();
 
-    std::list<class token_t> lexical_analysis();
+    std::list<class std::shared_ptr<class token>> lexical_analysis();
 };

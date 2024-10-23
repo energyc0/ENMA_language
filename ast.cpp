@@ -1,5 +1,7 @@
+#include <iostream>
 #include "ast.h"
 #include "lexer.h"
+#include "parser.h"
 #include "code_generator.h"
 
 extern std::unique_ptr<symbol_table> global_sym_table;
@@ -77,17 +79,17 @@ void assignment_expression::set_rvalue(const std::shared_ptr<expression>& expr){
 
 }
 */
-ast_node_type binary_expression::convert_operation(operator_type op) const{
+ast_node_type binary_expression::convert_operation(arithmetical_operation op) const{
     switch (op){
-        case operator_type::ADD: return ast_node_type::ADD;
-        case operator_type::SUB: return ast_node_type::SUB;
-        case operator_type::MUL: return ast_node_type::MUL;
-        case operator_type::DIV: return ast_node_type::DIV;
+        case arithmetical_operation::ADD: return ast_node_type::ADD;
+        case arithmetical_operation::SUB: return ast_node_type::SUB;
+        case arithmetical_operation::MUL: return ast_node_type::MUL;
+        case arithmetical_operation::DIV: return ast_node_type::DIV;
         default:
             throw std::runtime_error("undefined binary operation\n");
     }
 }
-binary_expression::binary_expression(operator_type op,
+binary_expression::binary_expression(arithmetical_operation op,
  const std::shared_ptr<expression>& left,
   const std::shared_ptr<expression>& right) : expression(convert_operation(op), 0, left, right){}
 

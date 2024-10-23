@@ -1,6 +1,7 @@
 #include <iostream>
-#include "parser.h"
 #include "code_generator.h"
+#include "parser.h"
+#include "ast.h"
 
 unhandled_register_error::unhandled_register_error(const char* msg, const code_register& reg) 
 : _msg("register: " + std::string(reg.get_name()) + "\n" + std::string(msg)) {}

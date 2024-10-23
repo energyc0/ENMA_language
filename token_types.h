@@ -55,10 +55,11 @@ class token{
 protected:
     token_type _type;
 
-    token(token_type t) : _type(t) {}
-    token(const token& token) : _type(token._type){}
-    token(token&& token) : _type(token._type){}
+    token(token_type t) noexcept: _type(t) {}
+    token(const token& token) noexcept: _type(token._type){}
+    token(token&& token) noexcept: _type(token._type){}
 public:
+
     virtual inline token_type get_type() const noexcept {return _type;}
 
     virtual token& operator=(const token& t) {
@@ -74,11 +75,11 @@ private:
     keyword_type _keyword;
 
 public:
-    token_keyword(keyword_type keyword) : token(token_type::KEYWORD), _keyword(keyword) {}
-    token_keyword(const token_keyword& t) : token(token_type::KEYWORD), _keyword(t._keyword) {}
-    token_keyword(token_keyword&& t) : token(token_type::KEYWORD), _keyword(t._keyword) {}
+    token_keyword(keyword_type keyword) noexcept: token(token_type::KEYWORD), _keyword(keyword) {}
+    token_keyword(const token_keyword& t) noexcept: token(token_type::KEYWORD), _keyword(t._keyword) {}
+    token_keyword(token_keyword&& t) noexcept: token(token_type::KEYWORD), _keyword(t._keyword) {}
 
-    token_keyword& operator=(const token& t) {
+    virtual token_keyword& operator=(const token& t) {
         token::operator=(t);
         try{
             const auto& t_k = dynamic_cast<const token_keyword&>(t);
@@ -99,11 +100,11 @@ private:
     operator_type _operator;
 
 public:
-    token_operator(operator_type op) : token(token_type::OPERATOR) , _operator(op){}
-    token_operator(const token_operator& t) : token(token_type::OPERATOR) , _operator(t._operator){}
-    token_operator(token_operator&& t) : token(token_type::OPERATOR) , _operator(t._operator){}
+    token_operator(operator_type op) noexcept: token(token_type::OPERATOR) , _operator(op){}
+    token_operator(const token_operator& t) noexcept: token(token_type::OPERATOR) , _operator(t._operator){}
+    token_operator(token_operator&& t) noexcept: token(token_type::OPERATOR) , _operator(t._operator){}
 
-    token_operator& operator=(const token& t) {
+    virtual token_operator& operator=(const token& t) {
         token::operator=(t);
         try{
             const auto& t_o = dynamic_cast<const token_operator&>(t);
@@ -124,11 +125,11 @@ private:
     punctuation_type _punctuation;
 
 public:
-    token_punctuation(punctuation_type punct) : token(token_type::PUNCTUATION), _punctuation(punct){}
-    token_punctuation(const token_punctuation& t) : token(token_type::PUNCTUATION), _punctuation(t._punctuation){}
-    token_punctuation(token_punctuation&& t) : token(token_type::PUNCTUATION), _punctuation(t._punctuation){}
+    token_punctuation(punctuation_type punct) noexcept : token(token_type::PUNCTUATION), _punctuation(punct){}
+    token_punctuation(const token_punctuation& t) noexcept: token(token_type::PUNCTUATION), _punctuation(t._punctuation){}
+    token_punctuation(token_punctuation&& t) noexcept: token(token_type::PUNCTUATION), _punctuation(t._punctuation){}
 
-    token_punctuation& operator=(const token& t) {
+    virtual token_punctuation& operator=(const token& t) {
         token::operator=(t);
         try{
             const auto& t_p = dynamic_cast<const token_punctuation&>(t);
@@ -148,7 +149,9 @@ class token_constant : public token{
 private:
     int _val;
 public:
-    token_constant(int val) : token(token_type::CONSTANT), _val(val){}
+    token_constant(int val) noexcept : token(token_type::CONSTANT), _val(val){}
+    token_constant(token_constant&& t) noexcept: token(token_type::CONSTANT), _val(t._val){}
+    token_constant(const token_constant& t) noexcept: token(token_type::CONSTANT), _val(t._val){}
 
     inline int get_value() const noexcept {return _val;}
 };
@@ -158,17 +161,19 @@ private:
     int _id_idx;
 public:
     token_identifier(const std::string& identifier);
+    token_identifier(const token_identifier& t) noexcept: token(token_type::IDENTIFIER), _id_idx(t._id_idx) {}
+    token_identifier(token_identifier&& t) noexcept: token(token_type::IDENTIFIER), _id_idx(t._id_idx) {}
 
     std::string get_identifier() const noexcept;
-    inline int get_id_index() const noexcept{return _id_idx;}
+    inline int get_identifier_code() const noexcept{return _id_idx;}
 };
 
 class token_new_line : public token{
 public:
-    token_new_line() : token(token_type::NEW_LINE){}
+    token_new_line() noexcept: token(token_type::NEW_LINE){}
 };
 
 class token_end : public token{
 public:
-    token_end() : token(token_type::END){}
+    token_end() noexcept: token(token_type::END){}
 };

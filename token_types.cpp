@@ -1,5 +1,5 @@
 #include <memory>
-#include "enma_types.h"
+#include "token_types.h"
 #include "lexer.h"
 
 extern std::unique_ptr<symbol_table> global_sym_table;
