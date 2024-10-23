@@ -108,6 +108,14 @@ void binary_expression::set_right(const std::shared_ptr<expression>& expr){
     _right = expr;
 }
 
+binary_expression& binary_expression::operator=(const binary_expression& expr){
+    this->_type = expr._type;
+    this->_left = expr._left;
+    this->_right = expr._right;
+
+    return *this;
+}
+
 void statement::check_validity() const{
     switch(_type){
         case ast_node_type::PRINT:

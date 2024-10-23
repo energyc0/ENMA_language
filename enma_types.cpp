@@ -1,4 +1,8 @@
+#include <memory>
 #include "enma_types.h"
+#include "lexer.h"
+
+extern std::unique_ptr<symbol_table> global_sym_table;
 
 std::ostream& operator<<(std::ostream& os, const token_type& t){
     switch (t)
@@ -104,4 +108,12 @@ std::ostream& operator<<(std::ostream& os, const keyword_type& t){
         break;
     }
     return os;
+}
+
+token_identifier::token_identifier(const std::string& identifier) : token(token_type::IDENTIFIER){
+    _id_idx = global_sym_table->try_set_identifier(identifier);
+}
+
+std::string token_identifier::get_identifier() const noexcept{
+    return global_sym_table->get_identifier(_id_idx);
 }

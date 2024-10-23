@@ -11,6 +11,7 @@ public:
     bool has_identifier(int id){
         return _identifier_codes.find(id) != _identifier_codes.end();
     }
+    //check if identifier exists, return existing id code if it is or create a new one
     inline int try_set_identifier(const std::string& id) noexcept{
         if(_identifiers.find(id) != _identifiers.end()){
             return _identifiers[id];
@@ -19,13 +20,17 @@ public:
             return _identifiers[id] = _identifiers.size();
         }
     };
-    inline int get_identifier(const std::string& id) noexcept {
-        if(_identifiers.find(id) == _identifiers.end())
-            return -1;
-        return _identifiers[id];
+    inline int get_identifier(const std::string& id) const  {
+        auto it = _identifiers.find(id);
+        if(it != _identifiers.end())
+            return it->second;
+        throw std::runtime_error("identifier doesn't exist: " + id);
     }
-    inline std::string get_identifier(int id) noexcept {
-        return _identifier_codes[id];
+    inline std::string get_identifier(int id) const {
+        auto it = _identifier_codes.find(id);
+        if(it != _identifier_codes.end())
+            return it->second;
+        throw std::runtime_error("identifier doesn't exist: " + std::to_string(id));
     }
 };
 
