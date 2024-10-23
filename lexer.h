@@ -1,6 +1,7 @@
 #include <list>
 #include <unordered_set>
 #include <unordered_map>
+#include <fstream>
 
 class symbol_table{
 private:
@@ -31,10 +32,14 @@ public:
 class lexer{
 private:
     static const std::unordered_set<std::string> _keywords;
+    std::ifstream _file;
 
     int read_number(const std::string& line, int& idx) const noexcept;
     int read_identifier(const std::string& line, int& idx) noexcept;
-    bool process_line(const std::string& line, std::list<class token_t>& tokens);
+    void process_line(const std::string& line, std::list<class token_t>& tokens);
 public:
-    std::list<class token_t> lexical_analysis(std::ifstream& file, bool& result);
+    lexer(const std::string& input_file);
+    ~lexer();
+
+    std::list<class token_t> lexical_analysis();
 };

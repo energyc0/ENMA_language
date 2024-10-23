@@ -31,7 +31,7 @@ int lexer::read_identifier(const std::string& line, int& idx) noexcept{
     return global_sym_table->try_set_identifier(id);
 }
 
-bool lexer::process_line(const std::string& line, std::list<token_t>& tokens){
+void lexer::process_line(const std::string& line, std::list<token_t>& tokens){
     int n = line.size();
     for(int i = 0; i < n; i++){
         if(isspace(line[i]))
@@ -157,20 +157,28 @@ bool lexer::process_line(const std::string& line, std::list<token_t>& tokens){
                 tokens.emplace_back(token_t(token_type::IDENTIFIER, read_identifier(line, i)));
         }
     }
-    return true;
 }
 
-std::list<token_t> lexer::lexical_analysis(std::ifstream& file, bool& result){
-    std::list<token_t> tokens;
-    result = true;
+lexer::lexer(const std::string& input_file) {
+    _file.open(input_file);
+    if(!_file.is_open()){
+        _file.close();
+        throw std::runtime_error(input_file + " - failed to open,\n");
+    }
 
-    while(!file.eof()){
+}
+lexer::~lexer(){
+    _file.close();
+}
+
+std::list<token_t> lexer::lexical_analysis(){
+    std::list<token_t> tokens;
+
+
+    while(!_file.eof()){
         std::string code_line;
-        std::getline(file, code_line);
-        if(!process_line(code_line, tokens)){
-            result = false;
-            break;
-        }
+        std::getline(_file, code_line);
+        process_line(code_line, tokens);
         tokens.emplace_back(token_type::NEW_LINE,0);
     }
 

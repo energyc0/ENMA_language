@@ -3,6 +3,7 @@
 #include <vector>
 #include <iomanip>
 #include "enma_compiler.h"
+#include "lexer.h"
 #include "code_generator.h"
 
 extern std::unique_ptr<symbol_table> global_sym_table;
@@ -97,62 +98,48 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
 }
 
 bool ENMA_compiler::process_input_file(const std::string& filename){
-    bool is_correct_ext = false;
-    for(int i = filename.size() - 1; i >= 0; i--){
-        if(filename[i] == '.'){
-            if(filename.size() - i == 3 && filename.substr(i+1,2) == "em"){
-                is_correct_ext = true;
-            }
-            break;
-        }
-    }
-    if(!is_correct_ext){
-        std::cout << filename << " - input file extension is not recognized.\nPossible extensions - '.em,'\n";
-        return false;
-    }
-
-
-    std::ifstream input_file;
-    input_file.open(filename);
-    if(!input_file.is_open()){
-        std::cerr << filename << " - failed to open,\n";
-        input_file.close();
-        return false;
-    }else{
-        std::cout << filename << " - compiling.\n";
-    }
-
-    bool result;
-    auto tokens = _lexer.lexical_analysis(input_file, result);
-    if(!result){
-        return false;
-    }else{
-        ENMA_debugger::debug_tokens(tokens);
-    }
-    input_file.close();
-
-    token_storage storage(tokens);
-    auto ast = _parser.generate_ast(storage, result);
-    if(!result){
-        return false;
-    }else{
-        auto temp_root = ast;
-        ENMA_debugger::debug_ast(temp_root);
-        std::cout << '\n';
-    }
-    
     try{
+        bool is_correct_ext = false;
+        for(int i = filename.size() - 1; i >= 0; i--){
+            if(filename[i] == '.'){
+                if(filename.size() - i == 3 && filename.substr(i+1,2) == "em"){
+                    is_correct_ext = true;
+                }
+                break;
+            }
+        }
+        if(!is_correct_ext){
+            throw std::runtime_error(filename + " - input file extension is not recognized.\nPossible extensions - '.em,'\n");
+        }
+
+        bool result;
+
+        lexer my_lexer(filename);
+        std::cout << filename << " - compiling.\n";
+        auto tokens = my_lexer.lexical_analysis();
+        ENMA_debugger::debug_tokens(tokens);
+
+        token_storage storage(tokens);
+        auto ast = _parser.generate_ast(storage, result);
+        if(!result){
+            return false;
+        }else{
+            auto temp_root = ast;
+            ENMA_debugger::debug_ast(temp_root);
+            std::cout << '\n';
+        }
+        
         code_generator code_gen(filename.substr(0, filename.size() - 2) + "asm");
         result = code_gen.generate_code(ast);
 
-    }catch(const std::runtime_error& err){
-        std::cerr << err.what();
-        result = false;
-    }
 
-    if(!result){
-        return false;
+        if(!result){
+            return false;
+        }
+        std::cout << "generated " << filename.substr(0, filename.size() - 2) << "asm\n";
+        return true;
+    }catch(std::runtime_error& err){
+        std::cerr << err.what();
     }
-    std::cout << "generated " << filename.substr(0, filename.size() - 2) << "asm\n";
-    return true;
+    return false;
 }

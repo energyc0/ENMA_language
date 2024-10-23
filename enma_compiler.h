@@ -1,5 +1,4 @@
 #include <string>
-#include "lexer.h"
 #include "parser.h"
 
 class ENMA_debugger{
@@ -13,7 +12,6 @@ public:
 class ENMA_compiler{
 private:
     std::string _executable_name;
-    lexer _lexer;
     parser _parser;
 
 private:
