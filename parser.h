@@ -51,6 +51,8 @@ private:
     std::shared_ptr<class expression> bin_expr_parse(int prev_op_precedence);
     std::shared_ptr<class expression> binary_expr();
     std::shared_ptr<class print_statement> parse_print();
+    std::shared_ptr<class variable_declaration> parse_variable_declaration();
+    std::shared_ptr<class statement> expect_statement();
 public:
     std::shared_ptr<class statement> generate_ast(token_storage& tokens, bool& result);
 };

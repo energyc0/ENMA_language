@@ -141,12 +141,6 @@ statement::statement(ast_node_type t, int val,
     check_validity();
 }
 
-void statement::set_next(const std::shared_ptr<statement>& next){
-    if(!next)
-        throw std::runtime_error("next statement node == nullptr\n");
-    _right = next;
-}
-
 print_statement::print_statement(const std::shared_ptr<expression>& expr) :
  statement(ast_node_type::PRINT,0, expr, nullptr){}
 
@@ -240,6 +234,14 @@ int binary_expression::accept_visitor(code_generator& visitor) const{
     return visitor.node_interaction(this);
 }
 int print_statement::accept_visitor(code_generator& visitor) const{
+    visitor.node_interaction(this);
+    return 0;
+}
+int assignment_statement::accept_visitor(code_generator& visitor) const{
+    visitor.node_interaction(this);
+    return 0;
+}
+int variable_declaration::accept_visitor(code_generator& visitor) const{
     visitor.node_interaction(this);
     return 0;
 }

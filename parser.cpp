@@ -84,6 +84,8 @@ std::shared_ptr<expression> parser::get_primary_expr(){
     switch(t->get_type()){
         case token_type::CONSTANT:
             return std::make_shared<number_expression>(static_cast<token_constant&>(*t).get_value());
+        case token_type::IDENTIFIER:
+            return std::make_shared<identifier_expression>(static_cast<token_identifier&>(*t).get_identifier_code());
         case token_type::END:
         case token_type::PUNCTUATION:
             return nullptr;
@@ -119,21 +121,8 @@ std::shared_ptr<statement> parser::generate_ast(token_storage& tokens, bool& res
     try{
         _tokens = &tokens;
         
-        auto token = tokens.get_current();
-        if(token->get_type() == token_type::END)
-            return nullptr;
-        
-        auto root = parse_print();
-        auto node = root;
+        auto root = expect_statement();
 
-        token = tokens.get_current();
-        while(token->get_type() == token_type::KEYWORD &&
-         static_cast<token_keyword&>(*token).get_keyword() == keyword_type::PRINT){
-            node->set_next(parse_print());
-            const auto temp = std::static_pointer_cast<print_statement>(node->get_next());
-            node = temp;
-            token = tokens.get_current();
-        }
         result = true;
         return root;
     }catch(parsing_error& err){
@@ -144,10 +133,63 @@ std::shared_ptr<statement> parser::generate_ast(token_storage& tokens, bool& res
     return nullptr;
 }
 
+std::shared_ptr<statement> parser::expect_statement(){
+    auto t = _tokens->get_current();
+    if(is_match(t, token_type::END))
+        return nullptr;
+
+    std::shared_ptr<statement> node = nullptr;
+    switch (t->get_type()){
+        case token_type::END: return nullptr;
+        case token_type::KEYWORD:{
+            auto keyword_token = std::static_pointer_cast<token_keyword>(t);
+            switch (keyword_token->get_keyword()){
+                case keyword_type::PRINT: node =  parse_print(); break;
+                case keyword_type::LET: node =  parse_variable_declaration(); break;
+                default:
+                    throw parsing_error("unexpected keyword\n", *_tokens);
+            }
+            break;
+        }
+        default:
+            throw parsing_error("unexpected token\n", *_tokens);
+    }
+    node->set_next(expect_statement());
+    return node;
+}
+
+std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
+    auto t = _tokens->get_current();
+    if(!is_match(t, keyword_type::LET)){
+        throw parsing_error("'let' keyword expected\n", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t, token_type::IDENTIFIER)){
+        throw parsing_error("identifier expected\n", *_tokens);
+    }
+
+    auto id_token = std::static_pointer_cast<token_identifier>(t);
+
+    t = _tokens->get_next();
+    if(!is_match(t,operator_type::ASSIGN)){
+        throw parsing_error("operator '=' expected\n", *_tokens);
+    }
+    _tokens->next();
+
+    auto expr = binary_expr();
+
+    t = _tokens->get_current();
+    if(!is_match(t,punctuation_type::SEMICOLON)){
+        throw parsing_error("semicolon expected\n", *_tokens);
+    }
+    _tokens->next();
+    return std::make_shared<variable_declaration>(id_token->get_identifier_code(), expr);
+}
+
 std::shared_ptr<print_statement> parser::parse_print(){
-    auto token = _tokens->get_current();
-    if(token->get_type() != token_type::KEYWORD ||
-    static_cast<token_keyword&>(*token).get_keyword() != keyword_type::PRINT){
+    auto t = _tokens->get_current();
+    if(!is_match(t, keyword_type::PRINT)){
         throw parsing_error("print keyword expected\n", *_tokens);
     }
     //token = _tokens->get_next();
@@ -159,13 +201,12 @@ std::shared_ptr<print_statement> parser::parse_print(){
 
     auto expr = binary_expr();
 
-    token = _tokens->get_current();
+    t = _tokens->get_current();
     //if(token.get_type() != token_type::OPERATOR || 
     //token.get_value() != static_cast<int>(operator_type::RPAR)){
     //    throw parsing_error("syntax error\nright parenthesis expected\n", *_tokens);
     //}
-    if(token->get_type() != token_type::PUNCTUATION || 
-    static_cast<token_punctuation&>(*token).get_punctuation() != punctuation_type::SEMICOLON){
+    if(!is_match(t, punctuation_type::SEMICOLON)){
         throw parsing_error("syntax error\nsemicolon expected\n", *_tokens);
     }
     _tokens->next();

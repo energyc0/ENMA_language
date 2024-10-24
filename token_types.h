@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <memory>
 
 enum class token_type{
     CONSTANT,
@@ -177,3 +178,37 @@ class token_end : public token{
 public:
     token_end() noexcept: token(token_type::END){}
 };
+
+
+template<class T>
+inline bool is_match(const std::shared_ptr<token>& t, T type);
+
+template<>
+inline bool is_match<token_type>(const std::shared_ptr<token>& t, token_type type){
+    return t->get_type() == type;
+}
+
+template<>
+inline bool is_match<operator_type>(const std::shared_ptr<token>& t, operator_type type){
+    if(!is_match(t, token_type::OPERATOR)){
+        return false;
+    }
+    const auto& t_o = std::static_pointer_cast<token_operator>(t);
+    return t_o->get_operator() == type;
+}
+template<>
+inline bool is_match<punctuation_type>(const std::shared_ptr<token>& t, punctuation_type type){
+    if(!is_match(t, token_type::PUNCTUATION)){
+        return false;
+    }
+    const auto& t_o = std::static_pointer_cast<token_punctuation>(t);
+    return t_o->get_punctuation() == type;
+}
+template<>
+inline bool is_match<keyword_type>(const std::shared_ptr<token>& t, keyword_type type){
+    if(!is_match(t, token_type::KEYWORD)){
+        return false;
+    }
+    const auto& t_o = std::static_pointer_cast<token_keyword>(t);
+    return t_o->get_keyword() == type;
+}

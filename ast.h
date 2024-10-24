@@ -34,7 +34,7 @@ protected:
       std::shared_ptr<ast_node>&& right = std::shared_ptr<ast_node>());
 public:
     virtual ~ast_node();
-    constexpr inline ast_node_type get_type()const noexcept{ return _type; }
+    constexpr virtual inline ast_node_type get_type()const noexcept{ return _type; }
 
     virtual int accept_visitor(code_generator& visitor) const = 0;
 };
@@ -134,10 +134,12 @@ protected:
 public:
     virtual ~statement(){}
 
-    std::shared_ptr<statement> get_next() const noexcept{
+    virtual inline std::shared_ptr<statement> get_next() const noexcept{
         return std::static_pointer_cast<statement>(_right);
     }
-    void set_next(const std::shared_ptr<statement>& next);
+    virtual inline void set_next(const std::shared_ptr<statement>& next) noexcept{
+        _right = next;
+    }
 
     virtual int accept_visitor(code_generator& visitor) const = 0;
 };
@@ -181,6 +183,9 @@ public:
     inline std::shared_ptr<expression> get_expression() const noexcept{
         return std::static_pointer_cast<expression>(_left);
     }
+
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };
 
 //value is used for identifier code, left node is for the expression and right node is for the next
@@ -204,4 +209,7 @@ public:
     inline std::shared_ptr<expression> get_expression() const noexcept{
         return std::static_pointer_cast<expression>(_left);
     }
+
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };

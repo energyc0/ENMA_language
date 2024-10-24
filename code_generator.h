@@ -67,12 +67,16 @@ private:
     int node_interaction(const class number_expression* expr);
     int node_interaction(const class identifier_expression* expr);
     int node_interaction(const class binary_expression* expr);
-    void node_interaction(const class print_statement* expr);
+    void node_interaction(const class print_statement* stat);
+    void node_interaction(const class assignment_statement* stat);
+    void node_interaction(const class variable_declaration* stat);
 
     friend class number_expression;
     friend class identifier_expression;
     friend class binary_expression;
     friend class print_statement;
+    friend class variable_declaration;
+    friend class assignment_statement;
 public:
     code_generator(const std::string& output_filename);
 

@@ -94,6 +94,19 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
          std::cout << std::static_pointer_cast<number_expression>(node)->get_number();
             break;
         }
+        case ast_node_type::ID:{
+            std::cout << global_sym_table->get_identifier(std::static_pointer_cast<identifier_expression>(node)->get_id());
+            break;
+        }
+        case ast_node_type::VAR_DECL:{
+            std::cout << "let ";
+            const auto& var_stat = std::static_pointer_cast<variable_declaration>(node);
+            std::cout << var_stat->get_identifier() <<" = ";
+            debug_ast(var_stat->get_expression());
+            std::cout << '\n';
+            debug_ast(var_stat->get_next());
+            break;
+        }
         default:
             break;
     }

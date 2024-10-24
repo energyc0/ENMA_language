@@ -146,10 +146,22 @@ int code_generator::node_interaction(const binary_expression* expr){
             throw std::runtime_error("undefined binary expression operator\n");
     }
 }
-void code_generator::node_interaction(const print_statement* expr) {
-    print_reg(expr->get_expression()->accept_visitor(*this));
-    if(expr->get_next())
-        expr->get_next()->accept_visitor(*this);
+void code_generator::node_interaction(const print_statement* stat) {
+    print_reg(stat->get_expression()->accept_visitor(*this));
+    if(stat->get_next())
+        stat->get_next()->accept_visitor(*this);
+}
+void code_generator::node_interaction(const assignment_statement* stat){
+    return;
+    if(stat->get_next()){
+        stat->get_next()->accept_visitor(*this);
+    }
+}
+void code_generator::node_interaction(const variable_declaration* stat){
+    return;
+    if(stat->get_next()){
+        stat->get_next()->accept_visitor(*this);
+    }
 }
 
 code_generator::code_generator(const std::string& output_filename){
