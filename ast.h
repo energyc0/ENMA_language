@@ -17,6 +17,7 @@ enum class ast_node_type{
     ASSIGN
 };
 
+//value, left and right nodes are reserved
 class ast_node{
 protected:
     std::shared_ptr<ast_node> _left;
@@ -38,7 +39,7 @@ public:
     virtual int accept_visitor(code_generator& visitor) const = 0;
 };
 
-
+//value, left and right nodes are reserved
 class expression : public ast_node{
 protected:
     expression(ast_node_type t, int val = 0,
@@ -59,6 +60,7 @@ public:
     virtual int accept_visitor(code_generator& visitor) const = 0;
 };
 
+//value is used for constant storage, left and right nodes are reserved
 class number_expression : public expression{
 public:
     number_expression();
@@ -70,6 +72,7 @@ public:
     friend code_generator;
 };
 
+//value is used for identifier code, left and right nodes are reserved
 class identifier_expression : public expression{
 private:
     void check_for_validity() const;
@@ -94,6 +97,7 @@ public:
 };
 */
 
+//value is reserved, ast_node_type is for the arithmetical operation, left and right nodes are used for left and right expressions
 class binary_expression : public expression{
 private:
     ast_node_type convert_operation(arithmetical_operation op) const;
@@ -115,6 +119,7 @@ public:
     friend code_generator;
 };
 
+//value is reserved, left node is for the next node and right node is reserved
 class statement : public ast_node{
 protected:
     void check_validity() const;
@@ -123,9 +128,9 @@ protected:
      const std::shared_ptr<ast_node>& left = std::shared_ptr<ast_node>(),
       const std::shared_ptr<ast_node>& right = std::shared_ptr<ast_node>());
 
-    statement(ast_node_type t, int val = 0,
-     std::shared_ptr<ast_node>&& left = std::shared_ptr<ast_node>(),
-      std::shared_ptr<ast_node>&& right = std::shared_ptr<ast_node>());
+    statement(ast_node_type t, int val,
+     std::shared_ptr<ast_node>&& left,
+      std::shared_ptr<ast_node>&& right);
 public:
     virtual ~statement(){}
 
@@ -137,6 +142,7 @@ public:
     virtual int accept_visitor(code_generator& visitor) const = 0;
 };
 
+//value is reserved, left node is for the expression and right node is for the next node
 class print_statement : public statement{
 public:
     print_statement(const std::shared_ptr<expression>& expr = std::shared_ptr<expression>());
@@ -156,7 +162,46 @@ public:
     friend code_generator;
 };
 
+//value is used for identifier code, left node is for the expression and right node is for the next
 class variable_declaration : public statement{
+private:
+    bool _is_id_set;
 public:
+    variable_declaration() noexcept;
+    //throw an std::runtime_error exception if an identifier doesn't exist
+    variable_declaration(int id_code, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>());
+    //create a new one identifier in the global symbol table if the identifier doesn't exist
+    variable_declaration(const std::string& id, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>()) noexcept;
 
+    //set the code of an identifier, create a new one identifier if it doesn't exist 
+    void try_set_identifier(const std::string& id) noexcept;
+    std::string get_identifier() const;
+
+    void set_expression(const std::shared_ptr<expression>& expr);
+    inline std::shared_ptr<expression> get_expression() const noexcept{
+        return std::static_pointer_cast<expression>(_left);
+    }
+};
+
+//value is used for identifier code, left node is for the expression and right node is for the next
+class assignment_statement : public statement{
+private:
+    bool _is_id_set;
+public:
+    assignment_statement() noexcept;
+    //throw an std::runtime_error exception if an identifier doesn't exist
+    assignment_statement(int id_code, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>());
+    //throw an std::runtime_error exception if an identifier doesn't exist
+    assignment_statement(const std::string& id, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>());
+
+    //throw an std::runtime_error if the id doesn't exist
+    void set_identifier(const std::string& id);
+    //throw an std::runtime_error if the id is not set
+    std::string get_identifier() const;
+
+    //throw an std::runtime_error if expr == nullptr
+    void set_expression(const std::shared_ptr<expression>& expr);
+    inline std::shared_ptr<expression> get_expression() const noexcept{
+        return std::static_pointer_cast<expression>(_left);
+    }
 };

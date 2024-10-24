@@ -14,11 +14,12 @@
 
     statements:   statement
                 | statement statements
-                ;
+                ";"
 
     statement:    "print" expression
-                | "let" identifier "=" expression 
-                ; 
+                | "let" identifier "=" expression
+                | identifier "=" expression
+                ";" 
 
     expression  : number
                 | identifier

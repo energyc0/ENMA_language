@@ -172,6 +172,64 @@ print_statement& print_statement::operator=(const print_statement& stat){
     return *this;
 }
 
+variable_declaration::variable_declaration() noexcept : statement(ast_node_type::VAR_DECL), _is_id_set(false){}
+
+variable_declaration::variable_declaration(int id_code, const std::shared_ptr<expression>& expr) 
+: statement(ast_node_type::VAR_DECL, id_code, expr, nullptr), _is_id_set(true){
+    if(!global_sym_table->has_identifier(id_code))
+        throw std::runtime_error("an identifier with the id code doesn't exist: " + std::to_string(id_code));
+}
+variable_declaration::variable_declaration(const std::string& id, const std::shared_ptr<expression>& expr) noexcept :
+statement(ast_node_type::VAR_DECL, global_sym_table->try_set_identifier(id), expr, nullptr), _is_id_set(true){}
+
+void variable_declaration::try_set_identifier(const std::string& id) noexcept{
+    _is_id_set = true;
+    _val = global_sym_table->try_set_identifier(id);
+}
+std::string variable_declaration::get_identifier() const{
+    if(!_is_id_set)
+        throw std::runtime_error("undefined behaviour: identifier is not set");
+    return global_sym_table->get_identifier(_val);
+}
+void variable_declaration::set_expression(const std::shared_ptr<expression>& expr){
+    if(!expr)
+        throw std::runtime_error("expression node == nullptr");
+    _left = expr;
+}
+
+assignment_statement::assignment_statement() noexcept : statement(ast_node_type::ASSIGN), _is_id_set(false){}
+//throw an std::runtime_error exception if an identifier doesn't exist
+assignment_statement::assignment_statement(int id_code, const std::shared_ptr<expression>& expr):
+ statement(ast_node_type::ASSIGN, id_code, expr, nullptr), _is_id_set(true){
+    if(!global_sym_table->has_identifier(id_code))
+        throw std::runtime_error("an identifier with the id code doesn't exist: " + std::to_string(id_code));
+}
+//throw an std::runtime_error exception if an identifier doesn't exist
+assignment_statement::assignment_statement(const std::string& id, const std::shared_ptr<expression>& expr):
+ statement(ast_node_type::ASSIGN), _is_id_set(true){
+    if(!global_sym_table->has_identifier(id))
+        throw std::runtime_error("an identifier doesn't exist: " + id);
+    _left = expr;
+    _val = global_sym_table->try_set_identifier(id);
+}
+
+void assignment_statement::set_identifier(const std::string& id){
+    if(!global_sym_table->has_identifier(id))
+        throw std::runtime_error("an identifier doesn't exist: " + id);
+    _val = global_sym_table->try_set_identifier(id);
+    _is_id_set = true;
+}
+std::string assignment_statement::get_identifier() const{
+    if(!_is_id_set)
+        throw std::runtime_error("undefined behaviour: identifier is not set");
+    return global_sym_table->get_identifier(_val);
+}
+void assignment_statement::set_expression(const std::shared_ptr<expression>& expr){
+    if(!expr)
+        throw std::runtime_error("expression node == nullptr");
+    _left = expr;
+}
+
 int number_expression::accept_visitor(code_generator& visitor) const{
     return visitor.node_interaction(this);
 }
