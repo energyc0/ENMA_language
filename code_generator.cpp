@@ -2,6 +2,9 @@
 #include "code_generator.h"
 #include "parser.h"
 #include "ast.h"
+#include "lexer.h"
+
+extern std::unique_ptr<symbol_table> global_sym_table;
 
 unhandled_register_error::unhandled_register_error(const char* msg, const code_register& reg) 
 : _msg("register: " + std::string(reg.get_name()) + "\n" + std::string(msg)) {}
@@ -10,10 +13,17 @@ std::string unhandled_register_error::what(){
     return _msg;
 }
 
+some_variable::some_variable(const std::string& name) : 
+_name("_" + std::to_string(global_sym_table->get_identifier(name)) + "_" + name){
+    _id_code = global_sym_table->get_identifier(name);
+}
+some_variable::some_variable(std::string&& name):
+_name("_" + std::to_string(global_sym_table->get_identifier(name)) + "_" + name){
+    _id_code = global_sym_table->get_identifier(name);
+}
+
 void code_generator::output_preamble(){
-    _file  << "section .data\n"
-            << "\td_fmt db '%d',10,0\n\n"
-            << "section .text\n"
+    _file   << "section .text\n"
             << "\textern printf\n"
             << "\tglobal main\n"
             << "main:\n"
@@ -21,11 +31,21 @@ void code_generator::output_preamble(){
             << "\tmov rbp, rsp\n\n";
 }
 
+void code_generator::output_variables(){
+    _file  << "section .data\n"
+            << "\td_fmt db '%d',10,0\n";
+
+    for(const auto& usr_var : _variables){
+        _file << "\t" << usr_var.get_asm_name() << " dd 0\n";
+    }
+}
+
 void code_generator::output_postamble(){
     _file  << "\n\tpop rbp\n"
             << "\tmov rax, 60\n"
             << "\tmov rdi, 0\n"
-            << "\tsyscall";
+            << "\tsyscall\n\n";
+    output_variables();
 }
 
 int code_generator::find_free_reg(){
@@ -35,6 +55,12 @@ int code_generator::find_free_reg(){
         }
     }
     throw std::runtime_error("failed to find free register");
+}
+
+int code_generator::mov_reg_var(int reg, const class identifier_expression* expr){
+    _file << "\tmov " << _registers[reg].get_name() << ", [" << _variables[expr->get_id()].get_asm_name() << "]\n";
+    _registers[reg].become_busy();
+    return reg;
 }
 
 int code_generator::mov_reg(int reg, int val){
@@ -78,6 +104,13 @@ int code_generator::div_reg(int left, int right){
     return left;
 }
 
+void code_generator::declare_variable(const variable_declaration* stat){
+    _variables.emplace_back(some_variable(stat->get_identifier()));
+
+    int reg = stat->get_expression()->accept_visitor(*this);
+    _file << "\tmov [" << _variables.back().get_asm_name() << "], " << _registers[reg].get_name() << '\n';
+}
+
 void code_generator::print_reg(int reg){
     check_valid_storage(_registers[reg]);
 
@@ -86,52 +119,11 @@ void code_generator::print_reg(int reg){
             << "\tcall printf\n\n";
 }
 
-/*
-int code_generator::traverse_node(std::shared_ptr<ast_node>& node){
-    if(!node)
-        return -1;
-    
-    int left_reg = 0,
-    right_reg = 0;
-    if(node->left){
-        left_reg = traverse_node(node->left);
-    }
-    switch (node->type){
-    case ast_node_type::PRINT:
-        print_reg(left_reg);
-        if(node->right){
-            return traverse_node(node->right);
-        }
-        return -1;
-    case ast_node_type::END: throw std::runtime_error("ast_node_type == END");
-    default:
-        break;
-    }
-    if(node->right){
-        right_reg = traverse_node(node->right);
-    }
-
-    switch (node->type){
-        case ast_node_type::NUM: return mov_reg(find_free_reg(), node->val);
-        case ast_node_type::ADD: return add_reg(left_reg,right_reg);
-        case ast_node_type::SUB: return sub_reg(left_reg,right_reg);
-        case ast_node_type::DIV: return div_reg(left_reg,right_reg);
-        case ast_node_type::MUL: return mul_reg(left_reg,right_reg);
-        case ast_node_type::PRINT: throw std::runtime_error("ast_node_type == PRINT");
-        case ast_node_type::END: throw std::runtime_error("ast_node_type == END");
-    default:
-        throw std::runtime_error("ast_node_type == undefined");
-        break;
-    }
-    return -1;
-}
-*/
-
 int code_generator::node_interaction(const number_expression* expr){
     return mov_reg(find_free_reg(),expr->get_number());
 }
 int code_generator::node_interaction(const identifier_expression* expr){
-    return expr->get_id();
+    return mov_reg_var(find_free_reg(), expr);
 }
 int code_generator::node_interaction(const binary_expression* expr){
     int left_reg = expr->get_left()->accept_visitor(*this);
@@ -158,7 +150,7 @@ void code_generator::node_interaction(const assignment_statement* stat){
     }
 }
 void code_generator::node_interaction(const variable_declaration* stat){
-    return;
+    declare_variable(stat);
     if(stat->get_next()){
         stat->get_next()->accept_visitor(*this);
     }

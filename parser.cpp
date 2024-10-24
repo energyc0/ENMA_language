@@ -170,6 +170,10 @@ std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
     }
 
     auto id_token = std::static_pointer_cast<token_identifier>(t);
+    if(_declared_identifiers.find(id_token->get_identifier_code()) != _declared_identifiers.end()){
+        throw parsing_error("identifier has already been declared\n", *_tokens);
+    }
+    _declared_identifiers.emplace(id_token->get_identifier_code());
 
     t = _tokens->get_next();
     if(!is_match(t,operator_type::ASSIGN)){

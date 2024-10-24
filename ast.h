@@ -178,6 +178,7 @@ public:
     //set the code of an identifier, create a new one identifier if it doesn't exist 
     void try_set_identifier(const std::string& id) noexcept;
     std::string get_identifier() const;
+    int get_identifier_code() const;
 
     void set_expression(const std::shared_ptr<expression>& expr);
     inline std::shared_ptr<expression> get_expression() const noexcept{

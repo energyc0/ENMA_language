@@ -1,6 +1,7 @@
 #include <array>
 #include <memory>
 #include <fstream>
+#include <vector>
 
 class code_register;
 
@@ -34,6 +35,21 @@ public:
     }
 };
 
+class some_variable{
+private:
+    int _id_code;
+    const std::string _name;
+public:
+    some_variable(const std::string& name);
+    some_variable(std::string&& name);
+    inline int get_id_code() const noexcept{return _id_code;}
+    inline std::string get_asm_name() const noexcept{return _name;}
+
+    friend bool operator<(const some_variable& a, const some_variable& b){
+        return a._id_code < b._id_code;
+    }
+};
+
 class code_generator{
 private:
 //rcx, r11
@@ -43,6 +59,8 @@ private:
     };
     std::ofstream _file;
 
+    std::vector<some_variable> _variables;
+private:
     template<class T, class... arg>
     void check_valid_storage(T a, arg ...args) const{
         check_valid_storage(a);
@@ -57,12 +75,16 @@ private:
     void output_preamble();
     int find_free_reg();
     int mov_reg(int reg, int val);
+    int mov_reg_var(int reg, const class identifier_expression* expr);
     int add_reg(int left, int right);
     int sub_reg(int left, int right);
     int mul_reg(int left, int right);
     int div_reg(int left, int right);
     void print_reg(int reg);
+    void declare_variable(const class variable_declaration* stat);
+
     void output_postamble();
+    void output_variables();
 
     int node_interaction(const class number_expression* expr);
     int node_interaction(const class identifier_expression* expr);

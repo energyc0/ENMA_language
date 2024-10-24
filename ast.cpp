@@ -185,6 +185,11 @@ std::string variable_declaration::get_identifier() const{
         throw std::runtime_error("undefined behaviour: identifier is not set");
     return global_sym_table->get_identifier(_val);
 }
+int variable_declaration::get_identifier_code() const{
+    if(!_is_id_set)
+        throw std::runtime_error("undefined behaviour: identifier is not set");
+    return _val;
+}
 void variable_declaration::set_expression(const std::shared_ptr<expression>& expr){
     if(!expr)
         throw std::runtime_error("expression node == nullptr");

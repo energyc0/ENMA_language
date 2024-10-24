@@ -1,5 +1,6 @@
 #include <memory>
 #include <list>
+#include <unordered_set>
 
 class token_storage{
 private:
@@ -43,7 +44,7 @@ enum class arithmetical_operation{
 class parser{
 private:
     token_storage* _tokens = nullptr;
-
+    std::unordered_set<int> _declared_identifiers;
 private:
     arithmetical_operation reinterpret_arith_op(const class token& t);
     int get_arith_op_precedence(arithmetical_operation op);
