@@ -204,6 +204,9 @@ public:
     void set_identifier(const std::string& id);
     //throw an std::runtime_error if the id is not set
     std::string get_identifier() const;
+    //throw an std::runtime_error if the id is not set
+    int get_identifier_code() const;
+
 
     //throw an std::runtime_error if expr == nullptr
     void set_expression(const std::shared_ptr<expression>& expr);

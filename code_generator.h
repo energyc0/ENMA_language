@@ -73,6 +73,7 @@ private:
     }
 
     void output_preamble();
+
     int find_free_reg();
     int mov_reg(int reg, int val);
     int mov_reg_var(int reg, const class identifier_expression* expr);
@@ -80,8 +81,10 @@ private:
     int sub_reg(int left, int right);
     int mul_reg(int left, int right);
     int div_reg(int left, int right);
+
     void print_reg(int reg);
     void declare_variable(const class variable_declaration* stat);
+    void assign_to_variable(const class assignment_statement* stat);
 
     void output_postamble();
     void output_variables();

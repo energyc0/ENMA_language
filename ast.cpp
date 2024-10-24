@@ -122,6 +122,7 @@ void statement::check_validity() const{
     switch(_type){
         case ast_node_type::PRINT:
         case ast_node_type::VAR_DECL:
+        case ast_node_type::ASSIGN:
             break;
         default:
             throw std::runtime_error("undefined statement type\n");
@@ -222,6 +223,12 @@ std::string assignment_statement::get_identifier() const{
     if(!_is_id_set)
         throw std::runtime_error("undefined behaviour: identifier is not set");
     return global_sym_table->get_identifier(_val);
+}
+
+int assignment_statement::get_identifier_code() const{
+    if(!_is_id_set)
+        throw std::runtime_error("undefined behaviour: identifier is not set");
+    return _val;
 }
 void assignment_statement::set_expression(const std::shared_ptr<expression>& expr){
     if(!expr)

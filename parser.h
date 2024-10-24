@@ -44,6 +44,7 @@ enum class arithmetical_operation{
 class parser{
 private:
     token_storage* _tokens = nullptr;
+    //declared identifiers id to check if a variable is not declared
     std::unordered_set<int> _declared_identifiers;
 private:
     arithmetical_operation reinterpret_arith_op(const class token& t);
@@ -53,6 +54,7 @@ private:
     std::shared_ptr<class expression> binary_expr();
     std::shared_ptr<class print_statement> parse_print();
     std::shared_ptr<class variable_declaration> parse_variable_declaration();
+    std::shared_ptr<class assignment_statement> parse_assignment_statement();
     std::shared_ptr<class statement> expect_statement();
 public:
     std::shared_ptr<class statement> generate_ast(token_storage& tokens, bool& result);

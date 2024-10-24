@@ -104,6 +104,14 @@ int code_generator::div_reg(int left, int right){
     return left;
 }
 
+void code_generator::assign_to_variable(const assignment_statement* stat){
+    if(stat->get_identifier_code() >= _variables.size()){
+        throw std::runtime_error("undeclared identifier\n");
+    }
+    int reg = stat->get_expression()->accept_visitor(*this);
+    _file << "\tmov [" << _variables[stat->get_identifier_code()].get_asm_name() << "], "  << _registers[reg].get_name() << '\n';
+}
+
 void code_generator::declare_variable(const variable_declaration* stat){
     _variables.emplace_back(some_variable(stat->get_identifier()));
 
@@ -144,7 +152,7 @@ void code_generator::node_interaction(const print_statement* stat) {
         stat->get_next()->accept_visitor(*this);
 }
 void code_generator::node_interaction(const assignment_statement* stat){
-    return;
+    assign_to_variable(stat);
     if(stat->get_next()){
         stat->get_next()->accept_visitor(*this);
     }

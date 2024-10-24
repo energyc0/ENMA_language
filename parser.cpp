@@ -84,8 +84,13 @@ std::shared_ptr<expression> parser::get_primary_expr(){
     switch(t->get_type()){
         case token_type::CONSTANT:
             return std::make_shared<number_expression>(static_cast<token_constant&>(*t).get_value());
-        case token_type::IDENTIFIER:
+        case token_type::IDENTIFIER:{
+            auto t_id = static_cast<token_identifier&>(*t);
+            if(_declared_identifiers.find(t_id.get_identifier_code()) == _declared_identifiers.end()){
+                throw parsing_error("syntax error\nundeclared identifier\n", *_tokens);
+            }
             return std::make_shared<identifier_expression>(static_cast<token_identifier&>(*t).get_identifier_code());
+        }
         case token_type::END:
         case token_type::PUNCTUATION:
             return nullptr;
@@ -151,11 +156,40 @@ std::shared_ptr<statement> parser::expect_statement(){
             }
             break;
         }
+        case token_type::IDENTIFIER: node = parse_assignment_statement(); break;
         default:
             throw parsing_error("unexpected token\n", *_tokens);
     }
     node->set_next(expect_statement());
     return node;
+}
+
+std::shared_ptr<class assignment_statement> parser::parse_assignment_statement(){
+    auto t = _tokens->get_current();
+    if(!is_match(t, token_type::IDENTIFIER)){
+        throw parsing_error("identifier expected\n", *_tokens);
+    }
+    auto t_id = std::static_pointer_cast<token_identifier>(t);
+    if(_declared_identifiers.find(t_id->get_identifier_code()) == _declared_identifiers.end()){
+        throw parsing_error("undeclared identifier\n", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,operator_type::ASSIGN)){
+        throw parsing_error("operator '=' expected\n", *_tokens);
+    }
+    _tokens->next();
+    auto expr = binary_expr();
+    if(!expr){
+        throw parsing_error("expression expected\n", *_tokens);
+    }
+    t = _tokens->get_current();
+    if(!is_match(t,punctuation_type::SEMICOLON)){
+        throw parsing_error("semicolon expected\n", *_tokens);
+    }
+    _tokens->next();
+
+    return std::make_shared<assignment_statement>(t_id->get_identifier_code(), expr);
 }
 
 std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
@@ -182,8 +216,12 @@ std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
     _tokens->next();
 
     auto expr = binary_expr();
-
     t = _tokens->get_current();
+    if(!expr){
+        throw parsing_error("expression expected\n", *_tokens);
+    }
+
+
     if(!is_match(t,punctuation_type::SEMICOLON)){
         throw parsing_error("semicolon expected\n", *_tokens);
     }
@@ -204,8 +242,11 @@ std::shared_ptr<print_statement> parser::parse_print(){
     _tokens->next();
 
     auto expr = binary_expr();
-
     t = _tokens->get_current();
+
+    if(!expr){
+        throw parsing_error("expression expected\n", *_tokens);
+    }
     //if(token.get_type() != token_type::OPERATOR || 
     //token.get_value() != static_cast<int>(operator_type::RPAR)){
     //    throw parsing_error("syntax error\nright parenthesis expected\n", *_tokens);

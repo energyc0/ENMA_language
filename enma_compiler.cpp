@@ -107,6 +107,14 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
             debug_ast(var_stat->get_next());
             break;
         }
+        case ast_node_type::ASSIGN:{
+            const auto& assign_stat = std::static_pointer_cast<assignment_statement>(node);
+            std::cout << assign_stat->get_identifier() << " = ";
+            debug_ast(assign_stat->get_expression());
+            std::cout << '\n';
+            debug_ast(assign_stat->get_next());
+            break;
+        }
         default:
             break;
     }
