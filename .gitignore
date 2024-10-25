@@ -3,4 +3,5 @@
 *.em
 *.asm
 *.o
+*.out
 my_output

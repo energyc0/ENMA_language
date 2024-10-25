@@ -36,7 +36,7 @@ void code_generator::output_variables(){
             << "\td_fmt db '%d',10,0\n";
 
     for(const auto& usr_var : _variables){
-        _file << "\t" << usr_var.get_asm_name() << " dd 0\n";
+        _file << "\t" << usr_var.get_asm_name() << " dq 0\n";
     }
 }
 
@@ -109,14 +109,16 @@ void code_generator::assign_to_variable(const assignment_statement* stat){
         throw std::runtime_error("undeclared identifier\n");
     }
     int reg = stat->get_expression()->accept_visitor(*this);
-    _file << "\tmov [" << _variables[stat->get_identifier_code()].get_asm_name() << "], "  << _registers[reg].get_name() << '\n';
+    _file << "\tmov [" << _variables[stat->get_identifier_code()].get_asm_name() << "], "  << _registers[reg].get_name() << "\n\n";
+    _registers[reg].become_free();
 }
 
 void code_generator::declare_variable(const variable_declaration* stat){
     _variables.emplace_back(some_variable(stat->get_identifier()));
 
     int reg = stat->get_expression()->accept_visitor(*this);
-    _file << "\tmov [" << _variables.back().get_asm_name() << "], " << _registers[reg].get_name() << '\n';
+    _file << "\tmov [" << _variables.back().get_asm_name() << "], " << _registers[reg].get_name() << "\n\n";
+    _registers[reg].become_free();
 }
 
 void code_generator::print_reg(int reg){
@@ -125,6 +127,7 @@ void code_generator::print_reg(int reg){
     _file  << "\n\tmov rdi, d_fmt\n"
             << "\tmov rsi, " << _registers[reg].get_name() << '\n'
             << "\tcall printf\n\n";
+    _registers[reg].become_free();
 }
 
 int code_generator::node_interaction(const number_expression* expr){
