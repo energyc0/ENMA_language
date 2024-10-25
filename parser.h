@@ -34,6 +34,12 @@ public:
 };
 
 enum class arithmetical_operation{
+    GREATER,
+    GREATER_EQ,
+    LESS,
+    LESS_EQ,
+    EQUAL,
+    NEQUAL,
     ADD,
     SUB,
     DIV,
@@ -47,7 +53,7 @@ private:
     //declared identifiers id to check if a variable is not declared
     std::unordered_set<int> _declared_identifiers;
 private:
-    arithmetical_operation reinterpret_arith_op(const class token& t);
+    arithmetical_operation reinterpret_arith_op(const class std::shared_ptr<class token>& t);
     int get_arith_op_precedence(arithmetical_operation op);
     std::shared_ptr<class expression> get_primary_expr();
     std::shared_ptr<class expression> bin_expr_parse(int prev_op_precedence);

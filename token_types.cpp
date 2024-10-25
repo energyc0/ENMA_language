@@ -53,8 +53,6 @@ std::ostream& operator<<(std::ostream& os, const operator_type& t){
         break;
     case operator_type::NEQUAL:           os << "!=";
         break;
-    case operator_type::NOT:              os << "!";
-        break;
     case operator_type::RPAR:             os << ")";
         break;
     case operator_type::SUB:              os << "-";

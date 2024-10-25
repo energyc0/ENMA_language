@@ -69,6 +69,67 @@ int code_generator::mov_reg(int reg, int val){
     return reg;
 }
 
+int code_generator::equal_reg(int left, int right){
+    check_valid_storage(_registers[left], _registers[right]);
+    
+    _file   << "\tcmp " << _registers[left].get_name() << ", " << _registers[right].get_name() << '\n'
+            << "\tsete " << _registers[left].get_name() << "b\n"
+            << "\tand " << _registers[left].get_name() << ", 255\n";
+
+    _registers[right].become_free();
+    return left;
+}    
+int code_generator::nequal_reg(int left, int right){
+    check_valid_storage(_registers[left], _registers[right]);
+    
+    _file   << "\tcmp " << _registers[left].get_name() << ", " << _registers[right].get_name() << '\n'
+            << "\tsetne " << _registers[left].get_name() << "b\n"
+            << "\tand " << _registers[left].get_name() << ", 255\n";
+
+    _registers[right].become_free();
+    return left;
+}
+int code_generator::greater_reg(int left, int right){
+    check_valid_storage(_registers[left], _registers[right]);
+    
+    _file   << "\tcmp " << _registers[left].get_name() << ", " << _registers[right].get_name() << '\n'
+            << "\tsetg " << _registers[left].get_name() << "b\n"
+            << "\tand " << _registers[left].get_name() << ", 255\n";
+
+    _registers[right].become_free();
+    return left;
+}
+int code_generator::greater_equal_reg(int left, int right){
+    check_valid_storage(_registers[left], _registers[right]);
+    
+    _file   << "\tcmp " << _registers[left].get_name() << ", " << _registers[right].get_name() << '\n'
+            << "\tsetge " << _registers[left].get_name() << "b\n"
+            << "\tand " << _registers[left].get_name() << ", 255\n";
+
+    _registers[right].become_free();
+    return left;
+}
+int code_generator::less_reg(int left, int right){
+    check_valid_storage(_registers[left], _registers[right]);
+    
+    _file   << "\tcmp " << _registers[left].get_name() << ", " << _registers[right].get_name() << '\n'
+            << "\tsetl " << _registers[left].get_name() << "b\n"
+            << "\tand " << _registers[left].get_name() << ", 255\n";
+
+    _registers[right].become_free();
+    return left;
+}
+int code_generator::less_equal_reg(int left, int right){
+    check_valid_storage(_registers[left], _registers[right]);
+    
+        _file   << "\tcmp " << _registers[left].get_name() << ", " << _registers[right].get_name() << '\n'
+            << "\tsetle " << _registers[left].get_name() << "b\n"
+            << "\tand " << _registers[left].get_name() << ", 255\n";
+    
+    _registers[right].become_free();
+    return left;
+}
+
 int code_generator::add_reg(int left, int right){
     check_valid_storage(_registers[left], _registers[right]);
 
@@ -145,6 +206,12 @@ int code_generator::node_interaction(const binary_expression* expr){
         case ast_node_type::SUB: return sub_reg(left_reg,right_reg);
         case ast_node_type::DIV: return div_reg(left_reg,right_reg);
         case ast_node_type::MUL: return mul_reg(left_reg,right_reg);
+        case ast_node_type::EQUAL: return equal_reg(left_reg,right_reg);
+        case ast_node_type::NEQUAl: return nequal_reg(left_reg,right_reg);
+        case ast_node_type::GREATER: return greater_reg(left_reg,right_reg);
+        case ast_node_type::GREATER_EQ: return greater_equal_reg(left_reg,right_reg);
+        case ast_node_type::LESS: return less_reg(left_reg,right_reg);
+        case ast_node_type::LESS_EQ: return less_equal_reg(left_reg,right_reg);
         default:
             throw std::runtime_error("undefined binary expression operator\n");
     }

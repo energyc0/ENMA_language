@@ -45,18 +45,23 @@ void token_storage::skip_new_lines(){
     }
 }
 
-arithmetical_operation parser::reinterpret_arith_op(const token& t){
-    if(t.get_type() == token_type::PUNCTUATION &&
-     static_cast<const token_punctuation&>(t).get_punctuation() == punctuation_type::SEMICOLON){
+arithmetical_operation parser::reinterpret_arith_op(const std::shared_ptr<token>& t){
+    if(is_match(t, punctuation_type::SEMICOLON)){
         return arithmetical_operation::END_EXPR;
-    }else if(t.get_type() != token_type::OPERATOR){
+    }else if(!is_match(t, token_type::OPERATOR)){
         throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
     }
-    switch (static_cast<const token_operator&>(t).get_operator()){
+    switch (std::static_pointer_cast<token_operator>(t)->get_operator()){
         case operator_type::ADD: return arithmetical_operation::ADD;
         case operator_type::SUB: return arithmetical_operation::SUB;
         case operator_type::MUL: return arithmetical_operation::MUL;
         case operator_type::DIV: return arithmetical_operation::DIV;
+        case operator_type::EQUAL: return arithmetical_operation::EQUAL;
+        case operator_type::NEQUAL: return arithmetical_operation::NEQUAL;
+        case operator_type::GREATER: return arithmetical_operation::GREATER;
+        case operator_type::GREATER_EQUAL: return arithmetical_operation::GREATER_EQ;
+        case operator_type::LESS: return arithmetical_operation::LESS;
+        case operator_type::LESS_EQUAl: return arithmetical_operation::LESS_EQ;
         default:
             throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
     }
@@ -69,14 +74,20 @@ int parser::get_arith_op_precedence(arithmetical_operation op){
             return 100;
         case arithmetical_operation::ADD:
         case arithmetical_operation::SUB:
+            return 50;
+        case arithmetical_operation::EQUAL:
+        case arithmetical_operation::NEQUAL:
+        case arithmetical_operation::GREATER:
+        case arithmetical_operation::GREATER_EQ:
+        case arithmetical_operation::LESS:
+        case arithmetical_operation::LESS_EQ:
             return 10;
         case arithmetical_operation::END_EXPR:
             return 0;
         default:
-            throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
             break;
     }
-    return -1;
+    throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
 }
 
 std::shared_ptr<expression> parser::get_primary_expr(){
@@ -107,15 +118,14 @@ std::shared_ptr<expression> parser::bin_expr_parse(int prev_op_precedence){
         return left;
 
     std::shared_ptr<expression> right = nullptr;
-    auto token = _tokens->get_next();
-    while(get_arith_op_precedence(reinterpret_arith_op(*token)) > prev_op_precedence){
+    auto t = _tokens->get_next();
+    while(get_arith_op_precedence(reinterpret_arith_op(t)) > prev_op_precedence){
         _tokens->next();
-        right = bin_expr_parse(get_arith_op_precedence(reinterpret_arith_op(*token)));
+        right = bin_expr_parse(get_arith_op_precedence(reinterpret_arith_op(t)));
 
-        left = std::static_pointer_cast<expression>(std::make_shared<binary_expression>(reinterpret_arith_op(*token), left, right));
-        token = _tokens->get_current();
-        if(token->get_type() == token_type::PUNCTUATION &&
-         static_cast<token_punctuation&>(*token).get_punctuation() ==punctuation_type::SEMICOLON){
+        left = std::static_pointer_cast<expression>(std::make_shared<binary_expression>(reinterpret_arith_op(t), left, right));
+        t = _tokens->get_current();
+        if(is_match(t,punctuation_type::SEMICOLON)){
             break;
         }
     }

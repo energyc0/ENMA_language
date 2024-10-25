@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
     if(compiler.process_input(input_files)){
         return 0;
     }else{
-        std::cout << "compilation terminated.\n";
+        std::cerr << "compilation terminated.\n";
         return 1;
     }
 }

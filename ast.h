@@ -12,6 +12,12 @@ enum class ast_node_type{
     SUB,
     DIV,
     MUL,
+    EQUAL,
+    NEQUAl,
+    GREATER,
+    GREATER_EQ,
+    LESS,
+    LESS_EQ,
     PRINT,
     VAR_DECL,
     ASSIGN

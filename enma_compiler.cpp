@@ -59,14 +59,20 @@ void ENMA_debugger::debug_tokens(const class std::list<std::shared_ptr<token>>& 
     }
 }
 
-char ENMA_debugger::reinterpret_arith_op(ast_node_type t){
+const char* ENMA_debugger::reinterpret_arith_op(ast_node_type t){
     switch (t){
-        case ast_node_type::ADD: return '+';
-        case ast_node_type::SUB: return '-';
-        case ast_node_type::DIV: return '/';
-        case ast_node_type::MUL: return '*';
+        case ast_node_type::ADD: return "+";
+        case ast_node_type::SUB: return "-";
+        case ast_node_type::DIV: return "/";
+        case ast_node_type::MUL: return "*";
+        case ast_node_type::EQUAL: return "==";
+        case ast_node_type::NEQUAl: return "!=";
+        case ast_node_type::GREATER: return ">";
+        case ast_node_type::GREATER_EQ: return ">=";
+        case ast_node_type::LESS: return "<";
+        case ast_node_type::LESS_EQ: return "<=";
         default:
-            return ' ';
+            return " ";
     }
 }
 
@@ -83,7 +89,13 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
         case ast_node_type::ADD:
         case ast_node_type::SUB:
         case ast_node_type::DIV:
-        case ast_node_type::MUL:{
+        case ast_node_type::MUL:
+        case ast_node_type::EQUAL:
+        case ast_node_type::NEQUAl:
+        case ast_node_type::GREATER:
+        case ast_node_type::GREATER_EQ:
+        case ast_node_type::LESS:
+        case ast_node_type::LESS_EQ:{
             const auto& bin_expr = std::static_pointer_cast<binary_expression>(node);
             debug_ast(bin_expr->get_left());
             std::cout << reinterpret_arith_op(bin_expr->get_type());

@@ -77,10 +77,18 @@ private:
     int find_free_reg();
     int mov_reg(int reg, int val);
     int mov_reg_var(int reg, const class identifier_expression* expr);
+
     int add_reg(int left, int right);
     int sub_reg(int left, int right);
     int mul_reg(int left, int right);
     int div_reg(int left, int right);
+
+    int equal_reg(int left, int right);    
+    int nequal_reg(int left, int right);
+    int greater_reg(int left, int right);
+    int greater_equal_reg(int left, int right);
+    int less_reg(int left, int right);
+    int less_equal_reg(int left, int right);
 
     void print_reg(int reg);
     void declare_variable(const class variable_declaration* stat);

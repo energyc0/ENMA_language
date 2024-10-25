@@ -27,8 +27,7 @@ enum class operator_type{
     GREATER,
     GREATER_EQUAL,
     LESS,
-    LESS_EQUAl,
-    NOT
+    LESS_EQUAl
 };
 std::ostream& operator<<(std::ostream& os, const operator_type& t);
 

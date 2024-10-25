@@ -85,6 +85,12 @@ ast_node_type binary_expression::convert_operation(arithmetical_operation op) co
         case arithmetical_operation::SUB: return ast_node_type::SUB;
         case arithmetical_operation::MUL: return ast_node_type::MUL;
         case arithmetical_operation::DIV: return ast_node_type::DIV;
+        case arithmetical_operation::EQUAL: return ast_node_type::EQUAL;
+        case arithmetical_operation::NEQUAL: return ast_node_type::NEQUAl;
+        case arithmetical_operation::LESS: return ast_node_type::LESS;
+        case arithmetical_operation::GREATER: return ast_node_type::GREATER;
+        case arithmetical_operation::LESS_EQ: return ast_node_type::LESS_EQ;
+        case arithmetical_operation::GREATER_EQ: return ast_node_type::GREATER_EQ;
         default:
             throw std::runtime_error("undefined binary operation\n");
     }

@@ -60,9 +60,11 @@ void lexer::process_line(const std::string& line, std::list<std::shared_ptr<toke
                     if(line[i+1] == '>'){
                         tokens.emplace_back(std::make_shared<token_punctuation>(punctuation_type::ARROW));
                         i++;
+                        break;
                     }else if(line[i+1] == '='){
                         tokens.emplace_back(std::make_shared<token_operator>(operator_type::EQUAL));
                         i++;
+                        break;
                     }
                 }
                 tokens.emplace_back(std::make_shared<token_operator>(operator_type::ASSIGN));
@@ -82,7 +84,7 @@ void lexer::process_line(const std::string& line, std::list<std::shared_ptr<toke
                     tokens.emplace_back(std::make_shared<token_operator>(operator_type::NEQUAL));
                     i++;
                 }else{
-                    tokens.emplace_back(std::make_shared<token_operator>(operator_type::NOT));
+                    throw std::runtime_error("undefined symbol '!', '!=' expected\n");
                 }
                 break;
             case '<':
