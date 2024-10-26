@@ -43,10 +43,14 @@ class lexer{
 private:
     static const std::unordered_set<std::string> _keywords;
     std::ifstream _file;
+    std::list<class std::shared_ptr<class token>> _tokens;
 
-    int read_number(const std::string& line, int& idx) const noexcept;
+    int read_number(const std::string& line, int& idx, bool is_negative) const noexcept;
     std::string read_identifier(const std::string& line, int& idx) noexcept;
-    void process_line(const std::string& line, std::list<class std::shared_ptr<class token>>& tokens);
+
+    void emplace_identifier(const std::string& line, int& idx) noexcept;
+
+    void process_line(const std::string& line);
 public:
     lexer(const std::string& input_file);
     ~lexer();
