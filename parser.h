@@ -61,7 +61,7 @@ private:
     std::shared_ptr<class print_statement> parse_print();
     std::shared_ptr<class variable_declaration> parse_variable_declaration();
     std::shared_ptr<class assignment_statement> parse_assignment_statement();
-    std::shared_ptr<class statement> parse_compound_statement();
+    std::shared_ptr<class compound_statement> expect_compound_statement();
     std::shared_ptr<class statement> parse_statement(const class std::shared_ptr<class token>& t);
     std::shared_ptr<class statement> expect_statement();
 public:

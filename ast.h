@@ -21,7 +21,8 @@ enum class ast_node_type{
     PRINT,
     VAR_DECL,
     ASSIGN,
-    COMPOUND
+    COMPOUND,
+    IF_HEAD
 };
 
 //value, left and right nodes are reserved
@@ -126,7 +127,7 @@ public:
     friend code_generator;
 };
 
-//value is reserved, left node is for the next node and right node is reserved
+//value is reserved, right node is for the next node and left node is reserved
 class statement : public ast_node{
 protected:
     void check_validity() const;
@@ -151,7 +152,7 @@ public:
     virtual int accept_visitor(code_generator& visitor) const = 0;
 };
 
-//value is reserved, left node is for the next node and right node is for the inner statement
+//value is reserved, right node is for the next node and left node is for the inner statement
 class compound_statement : public statement{
 public:
     compound_statement(const std::shared_ptr<statement>& inner_stat = std::shared_ptr<statement>(),
@@ -163,10 +164,10 @@ public:
     compound_statement(compound_statement&& stat);
 
     inline void set_inner_statement(const std::shared_ptr<statement>& inner_stat) noexcept{
-        _right = std::static_pointer_cast<ast_node>(inner_stat);
+        _left = std::static_pointer_cast<ast_node>(inner_stat);
     }
     inline std::shared_ptr<statement> get_inner_statement() const noexcept{
-        return std::static_pointer_cast<statement>(_right);
+        return std::static_pointer_cast<statement>(_left);
     }
 
     virtual int accept_visitor(code_generator& visitor) const;
@@ -191,6 +192,46 @@ public:
 
     virtual int accept_visitor(code_generator& visitor) const;
     friend code_generator;
+};
+
+//value is a number of the if statement,
+//left node is for a conditional expression node,
+//right node is for a next statement
+//2 additional nodes: if and else compound statements
+class if_statement : public statement{
+private:
+    std::shared_ptr<compound_statement> _if_stat;
+    std::shared_ptr<compound_statement> _else_stat;
+public:
+    if_statement(const std::shared_ptr<expression>& cond = std::shared_ptr<expression>(),
+     const std::shared_ptr<statement>& next = std::shared_ptr<statement>(),
+     const std::shared_ptr<statement>& if_inner_stat = std::shared_ptr<statement>(),
+     const std::shared_ptr<statement>& else_inner_stat = std::shared_ptr<statement>());
+    if_statement(std::shared_ptr<expression>&& cond,
+      std::shared_ptr<statement>&& next,
+      std::shared_ptr<statement>&& if_inner_stat,
+      std::shared_ptr<statement>&& else_inner_stat);
+    if_statement(const if_statement& stat);
+    if_statement(if_statement&& stat);
+
+    inline void set_conditional_expression(const std::shared_ptr<expression>& cond) noexcept{
+        _left = cond;
+    }
+    inline std::shared_ptr<expression> get_conditional_expression() const noexcept{
+        return std::static_pointer_cast<expression>(_left);
+    }
+    inline void set_if_inner_statement(const std::shared_ptr<compound_statement>& stat) noexcept{
+        _if_stat = stat;
+    }
+    inline std::shared_ptr<compound_statement> get_if_inner_statement() const noexcept{
+        return _if_stat;
+    };
+    inline void set_else_inner_statement(const std::shared_ptr<compound_statement>& stat) noexcept{
+        _else_stat = stat;
+    }
+    inline std::shared_ptr<compound_statement> get_else_inner_statement() const noexcept{
+        return _else_stat;
+    };
 };
 
 //value is used for identifier code, left node is for the expression and right node is for the next

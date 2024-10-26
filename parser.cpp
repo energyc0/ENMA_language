@@ -167,18 +167,6 @@ std::shared_ptr<statement> parser::parse_statement(const std::shared_ptr<token>&
             }
             break;
         }
-        case token_type::PUNCTUATION:{
-            if(is_match(t,punctuation_type::LBRACE)){
-                _tokens->next();
-                auto root = std::make_shared<compound_statement>();
-                root->set_inner_statement(parse_compound_statement());
-                return root;
-            }
-            if(is_match(t,punctuation_type::RBRACE)){
-                return nullptr;
-            }
-            break;
-        }
         case token_type::IDENTIFIER: return parse_assignment_statement();
         default:
             break;
@@ -186,22 +174,33 @@ std::shared_ptr<statement> parser::parse_statement(const std::shared_ptr<token>&
     throw parsing_error("unexpected token", *_tokens);
 }
 
-std::shared_ptr<statement> parser::parse_compound_statement(){
+std::shared_ptr<compound_statement> parser::expect_compound_statement(){
     auto t = _tokens->get_current();
 
-    while(is_match(t, punctuation_type::SEMICOLON)){
-        t = _tokens->get_next();
-    }
-    if(is_match(t,punctuation_type::RBRACE)){
-        _tokens->next();
-        return nullptr;
-    }
-    if(is_match(t,token_type::END)){
-        throw parsing_error("unclosed right brace", *_tokens);
+    auto root = std::make_shared<compound_statement>();
+    /*
+    
+    root->set_inner_statement(expect_statement());
+    auto node = root->get_inner_statement();
+    if(!node)
+        return root;
+
+    while(is_match(t,punctuation_type::RBRACE)){
+        while(is_match(t, punctuation_type::SEMICOLON)){
+            t = _tokens->get_next();
+        }
+        if(is_match(t,punctuation_type::RBRACE)){
+            _tokens->next();
+            break;
+        }
+        if(is_match(t,token_type::END)){
+            throw parsing_error("unclosed right brace", *_tokens);
+        }
     }
     auto node = parse_statement(t);
     node->set_next(parse_compound_statement());
-    return node;
+    */
+    return root;
 }
 
 std::shared_ptr<statement> parser::expect_statement(){
@@ -209,9 +208,6 @@ std::shared_ptr<statement> parser::expect_statement(){
 
     while(is_match(t, punctuation_type::SEMICOLON)){
         t = _tokens->get_next();
-    }
-    if(is_match(t,punctuation_type::RBRACE)){
-        throw parsing_error("right brace unexpected", *_tokens);
     }
     if(is_match(t, token_type::END)){
         return nullptr;
