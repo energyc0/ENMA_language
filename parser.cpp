@@ -46,7 +46,7 @@ void token_storage::skip_new_lines(){
 }
 
 arithmetical_operation parser::reinterpret_arith_op(const std::shared_ptr<token>& t){
-    if(is_match(t, punctuation_type::SEMICOLON)){
+    if(is_match(t, punctuation_type::SEMICOLON) || is_match(t, operator_type::RPAR)){
         return arithmetical_operation::END_EXPR;
     }else if(!is_match(t, token_type::OPERATOR)){
         throw parsing_error("syntax error\nexpected arithmetical operation\n", *_tokens);
@@ -125,7 +125,7 @@ std::shared_ptr<expression> parser::bin_expr_parse(int prev_op_precedence){
 
         left = std::static_pointer_cast<expression>(std::make_shared<binary_expression>(reinterpret_arith_op(t), left, right));
         t = _tokens->get_current();
-        if(is_match(t,punctuation_type::SEMICOLON)){
+        if(is_match(t,punctuation_type::SEMICOLON) || is_match(t, punctuation_type::RBRACE)){
             break;
         }
     }
@@ -244,11 +244,10 @@ std::shared_ptr<print_statement> parser::parse_print(){
     if(!is_match(t, keyword_type::PRINT)){
         throw parsing_error("print keyword expected\n", *_tokens);
     }
-    //token = _tokens->get_next();
-    //if(token.get_type() != token_type::OPERATOR || 
-    //token.get_value() != static_cast<int>(operator_type::LPAR)){
-    //    throw parsing_error("syntax error\nleft parenthesis expected\n", *_tokens);
-    //}
+    t = _tokens->get_next();
+    if(!is_match(t, operator_type::LPAR)){
+        throw parsing_error("syntax error\nleft parenthesis expected\n", *_tokens);
+    }
     _tokens->next();
 
     auto expr = binary_expr();
@@ -257,10 +256,12 @@ std::shared_ptr<print_statement> parser::parse_print(){
     if(!expr){
         throw parsing_error("expression expected\n", *_tokens);
     }
-    //if(token.get_type() != token_type::OPERATOR || 
-    //token.get_value() != static_cast<int>(operator_type::RPAR)){
-    //    throw parsing_error("syntax error\nright parenthesis expected\n", *_tokens);
-    //}
+
+    if(!is_match(t, operator_type::RPAR)){
+        throw parsing_error("syntax error\nright parenthesis expected\n", *_tokens);
+    }
+
+    t = _tokens->get_next();
     if(!is_match(t, punctuation_type::SEMICOLON)){
         throw parsing_error("syntax error\nsemicolon expected\n", *_tokens);
     }

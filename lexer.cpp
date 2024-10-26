@@ -140,7 +140,7 @@ void lexer::process_line(const std::string& line){
                 break;
             case 'i':
                 if((i + 1 == n || isspace(line[i+1] || line[i+1] == '(')) && line.substr(i,2) == "if"){
-                    i+=2;
+                    i++;
                     _tokens.emplace_back(std::make_shared<token_keyword>(keyword_type::IF));
                 }else{
                     emplace_identifier(line,i);
@@ -148,7 +148,7 @@ void lexer::process_line(const std::string& line){
                 break;
             case 'f':
                 if(i + 2 < n && (i + 3 == n || isspace(line[i+3] || line[i+3] == '(')) && line.substr(i,3) == "for"){
-                    i+=3;
+                    i+=2;
                     _tokens.emplace_back(std::make_shared<token_keyword>(keyword_type::FOR));
                 }else{
                     emplace_identifier(line,i);
@@ -156,7 +156,7 @@ void lexer::process_line(const std::string& line){
                 break;
             case 'w':
                 if(i + 4 < n && (i + 5 == n || isspace(line[i+5]) || line[i+5] == '(') && line.substr(i,3) == "while"){
-                    i+=5;
+                    i+=4;
                     _tokens.emplace_back(std::make_shared<token_keyword>(keyword_type::WHILE));
                 }else{
                     emplace_identifier(line,i);
@@ -164,7 +164,7 @@ void lexer::process_line(const std::string& line){
                 break;
             case 'p':
                 if(i + 4 < n && (i + 5 == n || isspace(line[i+5]) || line[i+5] == '(') && line.substr(i,5) == "print"){
-                    i+=5;
+                    i+=4;
                     _tokens.emplace_back(std::make_shared<token_keyword>(keyword_type::PRINT));
                 }else{
                     emplace_identifier(line,i);  
