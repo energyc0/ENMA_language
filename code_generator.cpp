@@ -234,6 +234,10 @@ void code_generator::node_interaction(const variable_declaration* stat){
     }
 }
 
+void code_generator::node_interaction(const class compound_statement* stat){
+    return;
+}
+
 code_generator::code_generator(const std::string& output_filename){
     _file.open(output_filename);
     if(!_file.is_open())

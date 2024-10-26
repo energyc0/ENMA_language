@@ -20,7 +20,8 @@ enum class ast_node_type{
     LESS_EQ,
     PRINT,
     VAR_DECL,
-    ASSIGN
+    ASSIGN,
+    COMPOUND
 };
 
 //value, left and right nodes are reserved
@@ -148,6 +149,28 @@ public:
     }
 
     virtual int accept_visitor(code_generator& visitor) const = 0;
+};
+
+//value is reserved, left node is for the next node and right node is for the inner statement
+class compound_statement : public statement{
+public:
+    compound_statement(const std::shared_ptr<statement>& inner_stat = std::shared_ptr<statement>(),
+     const std::shared_ptr<statement>& next = std::shared_ptr<statement>());
+    compound_statement(std::shared_ptr<statement>&& inner_stat,
+     std::shared_ptr<statement>&& next);
+
+    compound_statement(const compound_statement& stat);
+    compound_statement(compound_statement&& stat);
+
+    inline void set_inner_statement(const std::shared_ptr<statement>& inner_stat) noexcept{
+        _right = std::static_pointer_cast<ast_node>(inner_stat);
+    }
+    inline std::shared_ptr<statement> get_inner_statement() const noexcept{
+        return std::static_pointer_cast<statement>(_right);
+    }
+
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };
 
 //value is reserved, left node is for the expression and right node is for the next node

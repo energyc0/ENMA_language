@@ -77,13 +77,15 @@ const char* ENMA_debugger::reinterpret_arith_op(ast_node_type t){
 }
 
 void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node){
+    if(!node)
+        return;
     switch (node->get_type()){
         case ast_node_type::PRINT: {
             std::cout << "print ";
             const auto& print_stat = std::static_pointer_cast<print_statement>(node);
             debug_ast(print_stat->get_expression());
             std::cout << '\n';
-            if(print_stat->get_next()) debug_ast(print_stat->get_next());
+            debug_ast(print_stat->get_next());
             break;
         }
         case ast_node_type::ADD:

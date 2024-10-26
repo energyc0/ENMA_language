@@ -129,6 +129,7 @@ void statement::check_validity() const{
         case ast_node_type::PRINT:
         case ast_node_type::VAR_DECL:
         case ast_node_type::ASSIGN:
+        case ast_node_type::COMPOUND:
             break;
         default:
             throw std::runtime_error("undefined statement type\n");
@@ -160,6 +161,16 @@ print_statement(stat.get_expression()) {}
 print_statement::print_statement(print_statement&& stat):
 print_statement(std::move(stat.get_expression())){}
 
+compound_statement::compound_statement(const std::shared_ptr<statement>& inner_stat,
+     const std::shared_ptr<statement>& next) :
+      statement(ast_node_type::COMPOUND,0, next, inner_stat){}
+compound_statement::compound_statement(std::shared_ptr<statement>&& inner_stat,
+     std::shared_ptr<statement>&& next):
+      statement(ast_node_type::COMPOUND,0, std::move(next), std::move(inner_stat)){}
+compound_statement::compound_statement(const compound_statement& stat):
+ statement(ast_node_type::COMPOUND, 0, stat._left, stat._right){}
+compound_statement::compound_statement(compound_statement&& stat):
+ statement(ast_node_type::COMPOUND, 0, std::move(stat._left), std::move(stat._right)){}
 
 void print_statement::set_expression(const std::shared_ptr<expression>& expr){
     if(!expr)
@@ -260,6 +271,11 @@ int assignment_statement::accept_visitor(code_generator& visitor) const{
     return 0;
 }
 int variable_declaration::accept_visitor(code_generator& visitor) const{
+    visitor.node_interaction(this);
+    return 0;
+}
+
+int compound_statement::accept_visitor(code_generator& visitor) const{
     visitor.node_interaction(this);
     return 0;
 }

@@ -14,12 +14,30 @@
 
     statements:   statement
                 | statement statements
-                ";"
+                ;
 
-    statement:    "print" expression
-                | "let" identifier "=" expression
-                | identifier "=" expression
-                ";" 
+    statement:    print_statement
+                | declaration_statement
+                | assignment_statement
+                | compound_statement
+                | if_statement
+                ;
+
+    print_statement: "print" "(" expression ")" ";"
+
+    declaration_statement: "let" identifier "=" expression ";"
+
+    assignment_statement: identifier "=" expression ";"
+
+    compound_statement: "{" "}"
+                        | "{" statements "}"
+                        ;
+
+    if_statement:   if_head
+                    | if_head "else" compound_statement
+                    ;
+
+    if_head: "if" "=>" "(" unary_expression ")" compound_statement ;
 
     expression  : number
                 | identifier
@@ -29,6 +47,17 @@
                 | expression "*" expression
                 | "("expression")"
                 | identifier "=" expression
+                | unary_expression
+                ;
+
+    unary_expression: expression "==" expression
+                    | expression "!=" expression
+                    | expression ">" expression
+                    | expression "<" expression
+                    | expression ">=" expression
+                    | expression "<=" expression
+                    ;
+
 
     number :    int constant
     
