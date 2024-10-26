@@ -61,7 +61,10 @@ void lexer::process_line(const std::string& line){
                 if((_tokens.empty() || (!is_match(_tokens.back(), token_type::CONSTANT) && !is_match(_tokens.back(), token_type::IDENTIFIER))) &&
                  i+1 < n && isdigit(line[i+1])){
                     _tokens.emplace_back(std::make_shared<token_constant>(read_number(line, ++i, true)));
-                 }else{
+                }else if (i+1 < n && line[i+1] == '('){
+                    _tokens.emplace_back(std::make_shared<token_constant>(-1));
+                    _tokens.emplace_back(std::make_shared<token_operator>(operator_type::MUL));
+                }else{
                     _tokens.emplace_back(std::make_shared<token_operator>(operator_type::SUB));
                  }
                 break;

@@ -105,6 +105,12 @@ std::shared_ptr<expression> parser::get_primary_expr(){
         case token_type::END:
         case token_type::PUNCTUATION:
             return nullptr;
+        case token_type::OPERATOR:{
+            if(is_match(t, operator_type::LPAR)){
+                _tokens->next();
+                return bin_expr_parse(get_arith_op_precedence(arithmetical_operation::END_EXPR));
+            }
+        }
         default:
             throw parsing_error("syntax error\nprimary expression expected\n", *_tokens);
         break;
