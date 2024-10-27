@@ -61,6 +61,7 @@ private:
 
     std::vector<some_variable> _variables;
     int _if_clause_count = 0;
+    int _while_loop_count = 0;
 private:
     template<class T, class... arg>
     void check_valid_storage(T a, arg ...args) const{
@@ -95,6 +96,7 @@ private:
     void declare_variable(const class variable_declaration* stat);
     void assign_to_variable(const class assignment_statement* stat);
     void if_conditional(const class if_statement* stat);
+    void while_loop(const class while_statement* stat);
 
     void output_postamble();
     void output_variables();

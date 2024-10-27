@@ -150,6 +150,15 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
             debug_ast(compound_stat->get_next());
             break;
         }
+        case ast_node_type::WHILE_LOOP:{
+            const auto& while_stat = std::static_pointer_cast<while_statement>(node);
+            std::cout << "while => (";
+            debug_ast(while_stat->get_conditional_expression());
+            std::cout << ')';
+            debug_ast(while_stat->get_inner_statement());
+            debug_ast(while_stat->get_next());
+            break;
+        }
         default:
             std::cout << "undefined ast_node_type\n";
             break;

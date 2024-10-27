@@ -166,7 +166,7 @@ void lexer::process_line(const std::string& line){
                 }
                 break;
             case 'w':
-                if(i + 4 < n && (i + 5 >= n || isspace(line[i+5]) || line[i+5] == '(') && line.substr(i,3) == "while"){
+                if(i + 4 < n && (i + 5 >= n || isspace(line[i+5]) || ispunct(line[i+5])) && line.substr(i,5) == "while"){
                     i+=4;
                     _tokens.emplace_back(std::make_shared<token_keyword>(keyword_type::WHILE));
                 }else{

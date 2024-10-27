@@ -165,10 +165,22 @@ int code_generator::div_reg(int left, int right){
     return left;
 }
 
+void code_generator::while_loop(const while_statement* stat){
+    auto loop_number = std::to_string(_while_loop_count++);
+    _file   << "_WHILE_COND" << loop_number << ":\n";
+    //jump outside the loop if expression == 0
+    stat->get_conditional_expression()->accept_visitor(*this);
+    _file   << "\tjz _WHILE_END" << loop_number << "\n";
+    stat->get_inner_statement()->accept_visitor(*this);
+    _file   << "\tjmp _WHILE_COND" << loop_number << '\n'
+            << "_WHILE_END" << loop_number <<  ":\n\n";
+}
+
 void code_generator::if_conditional(const class if_statement* stat){
     auto conditional_clause_number = std::to_string(_if_clause_count++);
+    _file << '\n';
     stat->get_conditional_expression()->accept_visitor(*this);
-    // if conditional expression != 0 or not
+    // if conditional expression != 0
     _file  << "\tjnz _IF_STATEMENTS" << conditional_clause_number << '\n';
     if(stat->get_else_inner_statement()){
         stat->get_else_inner_statement()->accept_visitor(*this);
@@ -176,7 +188,7 @@ void code_generator::if_conditional(const class if_statement* stat){
     _file   << "\tjmp _END_IF_STATEMENTS" << conditional_clause_number  << '\n'
             << "_IF_STATEMENTS" << conditional_clause_number << ":\n";
     stat->get_if_inner_statement()->accept_visitor(*this);
-    _file << "_END_IF_STATEMENTS" << conditional_clause_number << ":\n";
+    _file << "_END_IF_STATEMENTS" << conditional_clause_number << ":\n\n";
 }
 
 void code_generator::assign_to_variable(const assignment_statement* stat){
@@ -263,7 +275,7 @@ void code_generator::node_interaction(const class if_statement* stat){
     }
 }
 void code_generator::node_interaction(const class while_statement* stat){
-    std::cout << "some interaction\n";
+    while_loop(stat);
     if(stat->get_next()){
         stat->get_next()->accept_visitor(*this);
     }

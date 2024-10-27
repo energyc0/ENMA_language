@@ -131,6 +131,8 @@ void statement::check_validity() const{
         case ast_node_type::ASSIGN:
         case ast_node_type::COMPOUND:
         case ast_node_type::IF_HEAD:
+        case ast_node_type::WHILE_LOOP:
+        case ast_node_type::FOR_LOOP:
             break;
         default:
             throw std::runtime_error("undefined statement type\n");

@@ -163,6 +163,7 @@ std::shared_ptr<statement> parser::parse_statement(const std::shared_ptr<token>&
                 case keyword_type::PRINT: return parse_print();
                 case keyword_type::LET: return parse_variable_declaration();
                 case keyword_type::IF: return parse_if_statement();
+                case keyword_type::WHILE: return parse_while_statement();
                 default:
                     throw parsing_error("unexpected keyword", *_tokens);
             }
@@ -237,7 +238,7 @@ std::shared_ptr<if_statement> parser::parse_if_statement(){
 
     t = _tokens->get_next();
     if(!is_match(t,punctuation_type::ARROW)){
-        throw parsing_error("arrow sign expected", *_tokens);
+        throw parsing_error("'=>' expected", *_tokens);
     }
 
     t = _tokens->get_next();
@@ -264,6 +265,40 @@ std::shared_ptr<if_statement> parser::parse_if_statement(){
     _tokens->next();
     auto inner_else_stat = expect_compound_statement();
     return std::make_shared<if_statement>(cond_expr, nullptr, inner_if_head_stat,inner_else_stat);
+}
+
+std::shared_ptr<while_statement> parser::parse_while_statement(){
+    auto t = _tokens->get_current();
+    if(!is_match(t,keyword_type::WHILE)){
+        throw parsing_error("'while' keyword expected", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,punctuation_type::ARROW)){
+        throw parsing_error("'=>' expected", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,operator_type::LPAR)){
+        throw parsing_error("left parenthesis expected", *_tokens);
+    }
+    
+    _tokens->next();
+    auto conditional_expr = parse_binary_expression();
+
+    t = _tokens->get_current();
+    if(!is_match(t,operator_type::RPAR)){
+        throw parsing_error("right parenthesis expected", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,punctuation_type::LBRACE)){
+        throw parsing_error("left brace expected", *_tokens);
+    }
+
+    auto inner_statements = expect_compound_statement();
+
+    return std::make_shared<while_statement>(conditional_expr, nullptr, inner_statements);
 }
 
 std::shared_ptr<class assignment_statement> parser::parse_assignment_statement(){
