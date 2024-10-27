@@ -130,6 +130,7 @@ void statement::check_validity() const{
         case ast_node_type::VAR_DECL:
         case ast_node_type::ASSIGN:
         case ast_node_type::COMPOUND:
+        case ast_node_type::IF_HEAD:
             break;
         default:
             throw std::runtime_error("undefined statement type\n");
@@ -298,8 +299,11 @@ int variable_declaration::accept_visitor(code_generator& visitor) const{
     visitor.node_interaction(this);
     return 0;
 }
-
 int compound_statement::accept_visitor(code_generator& visitor) const{
+    visitor.node_interaction(this);
+    return 0;
+}
+int if_statement::accept_visitor(code_generator& visitor) const{
     visitor.node_interaction(this);
     return 0;
 }

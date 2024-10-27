@@ -81,10 +81,10 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
         return;
     switch (node->get_type()){
         case ast_node_type::PRINT: {
-            std::cout << "print ";
+            std::cout << "print(";
             const auto& print_stat = std::static_pointer_cast<print_statement>(node);
             debug_ast(print_stat->get_expression());
-            std::cout << '\n';
+            std::cout << ")\n";
             debug_ast(print_stat->get_next());
             break;
         }
@@ -129,7 +129,29 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
             debug_ast(assign_stat->get_next());
             break;
         }
+        case ast_node_type::IF_HEAD:{
+            const auto& if_stat = std::static_pointer_cast<if_statement>(node);
+            std::cout << "if => (";
+            debug_ast(if_stat->get_conditional_expression());
+            std::cout << ")\n";
+            debug_ast(if_stat->get_if_inner_statement());
+            if(if_stat->get_else_inner_statement()){
+                std::cout << "else\n";
+                debug_ast(if_stat->get_else_inner_statement());
+            }
+            debug_ast(if_stat->get_next());
+            break;
+        }
+        case ast_node_type::COMPOUND:{
+            const auto& compound_stat = std::static_pointer_cast<compound_statement>(node);
+            std::cout << "{\n";
+            debug_ast(compound_stat->get_inner_statement());
+            std::cout << "}\n";
+            debug_ast(compound_stat->get_next());
+            break;
+        }
         default:
+            std::cout << "undefined ast_node_type\n";
             break;
     }
 }

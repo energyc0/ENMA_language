@@ -45,6 +45,7 @@ enum class keyword_type{
     LET,
     RETURN,
     IF,
+    ELSE,
     FOR,
     WHILE,
     PRINT

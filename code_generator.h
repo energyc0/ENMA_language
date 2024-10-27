@@ -104,6 +104,7 @@ private:
     void node_interaction(const class assignment_statement* stat);
     void node_interaction(const class variable_declaration* stat);
     void node_interaction(const class compound_statement* stat);
+    void node_interaction(const class if_statement* stat);
 
     friend class number_expression;
     friend class identifier_expression;
@@ -112,6 +113,7 @@ private:
     friend class variable_declaration;
     friend class assignment_statement;
     friend class compound_statement;
+    friend class if_statement;
 public:
     code_generator(const std::string& output_filename);
 

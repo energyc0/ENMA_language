@@ -95,6 +95,8 @@ std::ostream& operator<<(std::ostream& os, const keyword_type& t){
         break;
     case keyword_type::IF:        os << "if";
         break;
+    case keyword_type::ELSE:     os << "else";
+        break;
     case keyword_type::FOR:       os << "for";
         break;
     case keyword_type::WHILE:     os << "while";

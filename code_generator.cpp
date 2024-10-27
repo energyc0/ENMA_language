@@ -233,9 +233,11 @@ void code_generator::node_interaction(const variable_declaration* stat){
         stat->get_next()->accept_visitor(*this);
     }
 }
-
 void code_generator::node_interaction(const class compound_statement* stat){
     return;
+}
+void code_generator::node_interaction(const class if_statement* stat){
+
 }
 
 code_generator::code_generator(const std::string& output_filename){

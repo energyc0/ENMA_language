@@ -56,11 +56,12 @@ private:
     arithmetical_operation reinterpret_arith_op(const class std::shared_ptr<class token>& t);
     int get_arith_op_precedence(arithmetical_operation op);
     std::shared_ptr<class expression> get_primary_expr();
-    std::shared_ptr<class expression> bin_expr_parse(int prev_op_precedence);
-    std::shared_ptr<class expression> binary_expr();
+    std::shared_ptr<class expression> bin_expr(int prev_op_precedence);
+    std::shared_ptr<class expression> parse_binary_expression();
     std::shared_ptr<class print_statement> parse_print();
     std::shared_ptr<class variable_declaration> parse_variable_declaration();
     std::shared_ptr<class assignment_statement> parse_assignment_statement();
+    std::shared_ptr<class if_statement> parse_if_statement();
     std::shared_ptr<class compound_statement> expect_compound_statement();
     std::shared_ptr<class statement> parse_statement(const class std::shared_ptr<class token>& t);
     std::shared_ptr<class statement> expect_statement();

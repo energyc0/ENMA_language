@@ -65,7 +65,7 @@
 
 ## Syntax
 
-**Keywords** - `let`, `return`, `if`, `for`, `while`
+**Keywords** - `let`, `return`, `if`,`else`, `for`, `while`
 
 **Binary operators** - `+`, `-`, `/`, `*`, `(`, `)`, `=`
 

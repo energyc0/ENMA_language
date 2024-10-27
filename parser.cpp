@@ -109,17 +109,17 @@ std::shared_ptr<expression> parser::get_primary_expr(){
         case token_type::OPERATOR:{
             if(is_match(t, operator_type::LPAR)){
                 _tokens->next();
-                return bin_expr_parse(get_arith_op_precedence(arithmetical_operation::END_EXPR));
+                return bin_expr(get_arith_op_precedence(arithmetical_operation::END_EXPR));
             }
         }
         default:
-            throw parsing_error("primary expression expected", *_tokens);
+            throw parsing_error("expression expected", *_tokens);
         break;
     }
     return nullptr;
 }
 
-std::shared_ptr<expression> parser::bin_expr_parse(int prev_op_precedence){
+std::shared_ptr<expression> parser::bin_expr(int prev_op_precedence){
     auto left = get_primary_expr();
     if(!left)
         return left;
@@ -128,7 +128,7 @@ std::shared_ptr<expression> parser::bin_expr_parse(int prev_op_precedence){
     auto t = _tokens->get_next();
     while(get_arith_op_precedence(reinterpret_arith_op(t)) > prev_op_precedence){
         _tokens->next();
-        right = bin_expr_parse(get_arith_op_precedence(reinterpret_arith_op(t)));
+        right = bin_expr(get_arith_op_precedence(reinterpret_arith_op(t)));
 
         left = std::static_pointer_cast<expression>(std::make_shared<binary_expression>(reinterpret_arith_op(t), left, right));
         t = _tokens->get_current();
@@ -162,6 +162,7 @@ std::shared_ptr<statement> parser::parse_statement(const std::shared_ptr<token>&
             switch (keyword_token->get_keyword()){
                 case keyword_type::PRINT: return parse_print();
                 case keyword_type::LET: return parse_variable_declaration();
+                case keyword_type::IF: return parse_if_statement();
                 default:
                     throw parsing_error("unexpected keyword", *_tokens);
             }
@@ -176,30 +177,38 @@ std::shared_ptr<statement> parser::parse_statement(const std::shared_ptr<token>&
 
 std::shared_ptr<compound_statement> parser::expect_compound_statement(){
     auto t = _tokens->get_current();
+    if(!is_match(t,punctuation_type::LBRACE)){
+        throw parsing_error("expected left brace", *_tokens);
+    }
 
     auto root = std::make_shared<compound_statement>();
-    /*
-    
-    root->set_inner_statement(expect_statement());
-    auto node = root->get_inner_statement();
-    if(!node)
+    t = _tokens->get_next();
+    //empty compound statement
+    if(is_match(t, punctuation_type::RBRACE)){
         return root;
+    }
 
-    while(is_match(t,punctuation_type::RBRACE)){
+    root->set_inner_statement(parse_statement(t));
+    auto node = root->get_inner_statement();
+
+    t = _tokens->get_current();
+    while(true){
         while(is_match(t, punctuation_type::SEMICOLON)){
             t = _tokens->get_next();
         }
         if(is_match(t,punctuation_type::RBRACE)){
-            _tokens->next();
             break;
         }
         if(is_match(t,token_type::END)){
             throw parsing_error("unclosed right brace", *_tokens);
         }
+
+        node->set_next(parse_statement(t));
+        node = node->get_next();
     }
-    auto node = parse_statement(t);
-    node->set_next(parse_compound_statement());
-    */
+    //skip a right brace
+    _tokens->next();
+
     return root;
 }
 
@@ -219,6 +228,43 @@ std::shared_ptr<statement> parser::expect_statement(){
     return node;
 }
 
+std::shared_ptr<if_statement> parser::parse_if_statement(){
+    auto t = _tokens->get_current();
+    if(!is_match(t,keyword_type::IF)){
+        throw parsing_error("'if' keyword expected", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,punctuation_type::ARROW)){
+        throw parsing_error("arrow sign expected", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,operator_type::LPAR)){
+        throw parsing_error("left parenthesis expected", *_tokens);
+    }
+    _tokens->next();
+
+    auto cond_expr = parse_binary_expression();
+    
+    t = _tokens->get_current();
+    if(!is_match(t,operator_type::RPAR)){
+        throw parsing_error("right parenthesis expected", *_tokens);
+    }
+
+    _tokens->next();
+    auto inner_if_head_stat = expect_compound_statement();
+
+    t = _tokens->get_current();
+    if(!is_match(t,keyword_type::ELSE)){
+        return std::make_shared<if_statement>(cond_expr, nullptr, inner_if_head_stat,nullptr);
+    }
+
+    _tokens->next();
+    auto inner_else_stat = expect_compound_statement();
+    return std::make_shared<if_statement>(cond_expr, nullptr, inner_if_head_stat,inner_else_stat);
+}
+
 std::shared_ptr<class assignment_statement> parser::parse_assignment_statement(){
     auto t = _tokens->get_current();
     if(!is_match(t, token_type::IDENTIFIER)){
@@ -234,7 +280,7 @@ std::shared_ptr<class assignment_statement> parser::parse_assignment_statement()
         throw parsing_error("operator '=' expected", *_tokens);
     }
     _tokens->next();
-    auto expr = binary_expr();
+    auto expr = parse_binary_expression();
     if(!expr){
         throw parsing_error("expression expected", *_tokens);
     }
@@ -270,7 +316,7 @@ std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
     }
     _tokens->next();
 
-    auto expr = binary_expr();
+    auto expr = parse_binary_expression();
     t = _tokens->get_current();
     if(!expr){
         throw parsing_error("expression expected", *_tokens);
@@ -295,7 +341,7 @@ std::shared_ptr<print_statement> parser::parse_print(){
     }
     _tokens->next();
 
-    auto expr = binary_expr();
+    auto expr = parse_binary_expression();
     t = _tokens->get_current();
 
     if(!expr){
@@ -314,6 +360,6 @@ std::shared_ptr<print_statement> parser::parse_print(){
     return std::make_shared<print_statement>(expr);
 }
 
-std::shared_ptr<expression> parser::binary_expr(){
-    return bin_expr_parse(parser::get_arith_op_precedence(arithmetical_operation::END_EXPR));
+std::shared_ptr<expression> parser::parse_binary_expression(){
+    return bin_expr(parser::get_arith_op_precedence(arithmetical_operation::END_EXPR));
 }

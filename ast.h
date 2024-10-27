@@ -232,6 +232,9 @@ public:
     inline std::shared_ptr<compound_statement> get_else_inner_statement() const noexcept{
         return _else_stat;
     };
+
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
 };
 
 //value is used for identifier code, left node is for the expression and right node is for the next
