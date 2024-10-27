@@ -164,19 +164,19 @@ print_statement(std::move(stat.get_expression())){}
 
 if_statement::if_statement(const std::shared_ptr<expression>& cond,
      const std::shared_ptr<statement>& next,
-     const std::shared_ptr<statement>& if_inner_stat,
-     const std::shared_ptr<statement>& else_inner_stat) : 
+     const std::shared_ptr<compound_statement>& if_inner_stat,
+     const std::shared_ptr<compound_statement>& else_inner_stat) : 
      statement(ast_node_type::IF_HEAD,0,cond, next),
-      _if_stat(std::static_pointer_cast<compound_statement>(if_inner_stat)),
-       _else_stat(std::static_pointer_cast<compound_statement>(else_inner_stat))  {}
+      _if_stat(if_inner_stat),
+       _else_stat(else_inner_stat)  {}
 
 if_statement::if_statement(std::shared_ptr<expression>&& cond,
       std::shared_ptr<statement>&& next,
-      std::shared_ptr<statement>&& if_inner_stat,
-      std::shared_ptr<statement>&& else_inner_stat) : 
+      std::shared_ptr<compound_statement>&& if_inner_stat,
+      std::shared_ptr<compound_statement>&& else_inner_stat) : 
      statement(ast_node_type::IF_HEAD,0,std::move(cond), std::move(next)),
-      _if_stat(std::static_pointer_cast<compound_statement>(std::move(if_inner_stat))),
-       _else_stat(std::static_pointer_cast<compound_statement>(std::move(else_inner_stat)))  {}
+      _if_stat(std::move(if_inner_stat)),
+       _else_stat(std::move(else_inner_stat))  {}
 
 if_statement::if_statement(const if_statement& stat) : 
      statement(ast_node_type::IF_HEAD,0,stat._left, stat._right),
@@ -188,14 +188,35 @@ if_statement::if_statement(if_statement&& stat) :
 
 compound_statement::compound_statement(const std::shared_ptr<statement>& inner_stat,
      const std::shared_ptr<statement>& next) :
-      statement(ast_node_type::COMPOUND,0, next, inner_stat){}
+      statement(ast_node_type::COMPOUND,0, inner_stat, next){}
+
 compound_statement::compound_statement(std::shared_ptr<statement>&& inner_stat,
      std::shared_ptr<statement>&& next):
-      statement(ast_node_type::COMPOUND,0, std::move(next), std::move(inner_stat)){}
+      statement(ast_node_type::COMPOUND,0, std::move(inner_stat), std::move(next)){}
+
 compound_statement::compound_statement(const compound_statement& stat):
  statement(ast_node_type::COMPOUND, 0, stat._left, stat._right){}
+
 compound_statement::compound_statement(compound_statement&& stat):
  statement(ast_node_type::COMPOUND, 0, std::move(stat._left), std::move(stat._right)){}
+
+while_statement::while_statement(const std::shared_ptr<expression>& expr,
+    const std::shared_ptr<statement>& next,
+     const std::shared_ptr<compound_statement>& inner_stat) : 
+     statement(ast_node_type::WHILE_LOOP, 0, expr, next), _inner_stat(inner_stat){}
+
+while_statement::while_statement(std::shared_ptr<expression>&& expr,
+    std::shared_ptr<statement>&& next,
+     std::shared_ptr<compound_statement>&& inner_stat) : 
+     statement(ast_node_type::WHILE_LOOP, 0, std::move(expr), std::move(next)),
+      _inner_stat(std::move(inner_stat)){}
+
+while_statement::while_statement(const while_statement& stat) : 
+     statement(ast_node_type::WHILE_LOOP, 0, stat._left, stat._right), _inner_stat(stat._inner_stat){}
+
+while_statement::while_statement(while_statement&& stat) : 
+     statement(ast_node_type::WHILE_LOOP, 0, std::move(stat._left), std::move(stat._right)),
+      _inner_stat(std::move(stat._inner_stat)){}
 
 void print_statement::set_expression(const std::shared_ptr<expression>& expr){
     if(!expr)
@@ -304,6 +325,11 @@ int compound_statement::accept_visitor(code_generator& visitor) const{
     return 0;
 }
 int if_statement::accept_visitor(code_generator& visitor) const{
+    visitor.node_interaction(this);
+    return 0;
+}
+
+int while_statement::accept_visitor(code_generator& visitor) const{
     visitor.node_interaction(this);
     return 0;
 }

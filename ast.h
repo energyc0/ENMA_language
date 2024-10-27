@@ -22,7 +22,9 @@ enum class ast_node_type{
     VAR_DECL,
     ASSIGN,
     COMPOUND,
-    IF_HEAD
+    IF_HEAD,
+    WHILE_LOOP,
+    FOR_LOOP
 };
 
 //value, left and right nodes are reserved
@@ -205,12 +207,12 @@ private:
 public:
     if_statement(const std::shared_ptr<expression>& cond = std::shared_ptr<expression>(),
      const std::shared_ptr<statement>& next = std::shared_ptr<statement>(),
-     const std::shared_ptr<statement>& if_inner_stat = std::shared_ptr<statement>(),
-     const std::shared_ptr<statement>& else_inner_stat = std::shared_ptr<statement>());
+     const std::shared_ptr<compound_statement>& if_inner_stat = std::shared_ptr<compound_statement>(),
+     const std::shared_ptr<compound_statement>& else_inner_stat = std::shared_ptr<compound_statement>());
     if_statement(std::shared_ptr<expression>&& cond,
       std::shared_ptr<statement>&& next,
-      std::shared_ptr<statement>&& if_inner_stat,
-      std::shared_ptr<statement>&& else_inner_stat);
+      std::shared_ptr<compound_statement>&& if_inner_stat,
+      std::shared_ptr<compound_statement>&& else_inner_stat);
     if_statement(const if_statement& stat);
     if_statement(if_statement&& stat);
 
@@ -286,6 +288,40 @@ public:
     inline std::shared_ptr<expression> get_expression() const noexcept{
         return std::static_pointer_cast<expression>(_left);
     }
+
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
+};
+
+//value is reserved,
+//left node is for a conditional expression and right node is for the next
+//1 additional node for an inner statement
+class while_statement : public statement{
+private:
+    std::shared_ptr<compound_statement> _inner_stat;
+
+public:
+    while_statement(const std::shared_ptr<expression>& expr = std::shared_ptr<expression>(),
+    const std::shared_ptr<statement>& next = std::shared_ptr<statement>(),
+     const std::shared_ptr<compound_statement>& inner_stat = std::shared_ptr<compound_statement>());
+    while_statement(std::shared_ptr<expression>&& expr,
+    std::shared_ptr<statement>&& next,
+     std::shared_ptr<compound_statement>&& inner_stat);
+    while_statement(const while_statement& stat);
+    while_statement(while_statement&& stat);
+
+    inline void set_conditional_expression(const std::shared_ptr<expression>& expr)noexcept{
+        _left = expr;
+    }
+    inline std::shared_ptr<expression> get_conditional_expression() const noexcept{
+        return std::static_pointer_cast<expression>(_left);
+    }
+    inline void set_inner_statement(const std::shared_ptr<compound_statement>& stat) noexcept{
+        _inner_stat = stat;
+    }
+    inline std::shared_ptr<compound_statement> get_inner_statement() const noexcept{
+        return _inner_stat;
+    };
 
     virtual int accept_visitor(code_generator& visitor) const;
     friend code_generator;

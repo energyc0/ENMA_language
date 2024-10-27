@@ -262,6 +262,13 @@ void code_generator::node_interaction(const class if_statement* stat){
         stat->get_next()->accept_visitor(*this);
     }
 }
+void code_generator::node_interaction(const class while_statement* stat){
+    std::cout << "some interaction\n";
+    if(stat->get_next()){
+        stat->get_next()->accept_visitor(*this);
+    }
+}
+
 
 code_generator::code_generator(const std::string& output_filename){
     _file.open(output_filename);
