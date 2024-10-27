@@ -205,6 +205,7 @@ std::shared_ptr<compound_statement> parser::expect_compound_statement(){
 
         node->set_next(parse_statement(t));
         node = node->get_next();
+        t = _tokens->get_current();
     }
     //skip a right brace
     _tokens->next();

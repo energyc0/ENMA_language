@@ -26,7 +26,7 @@ std::string lexer::read_identifier(const std::string& line, int& idx) noexcept{
     int start = idx;
     do{
         idx++;
-    }while(isalpha(line[idx]) || line[idx] == '_');
+    }while(isalpha(line[idx]) || isdigit(line[idx]) || line[idx] == '_');
     return line.substr(start, idx-- - start);
 }
 

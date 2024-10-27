@@ -165,9 +165,23 @@ int code_generator::div_reg(int left, int right){
     return left;
 }
 
+void code_generator::if_conditional(const class if_statement* stat){
+    auto conditional_clause_number = std::to_string(_if_clause_count++);
+    stat->get_conditional_expression()->accept_visitor(*this);
+    // if conditional expression != 0 or not
+    _file  << "\tjnz _IF_STATEMENTS" << conditional_clause_number << '\n';
+    if(stat->get_else_inner_statement()){
+        stat->get_else_inner_statement()->accept_visitor(*this);
+    }
+    _file   << "\tjmp _END_IF_STATEMENTS" << conditional_clause_number  << '\n'
+            << "_IF_STATEMENTS" << conditional_clause_number << ":\n";
+    stat->get_if_inner_statement()->accept_visitor(*this);
+    _file << "_END_IF_STATEMENTS" << conditional_clause_number << ":\n";
+}
+
 void code_generator::assign_to_variable(const assignment_statement* stat){
     if(stat->get_identifier_code() >= _variables.size()){
-        throw std::runtime_error("undeclared identifier\n");
+        throw std::runtime_error("undeclared identifier");
     }
     int reg = stat->get_expression()->accept_visitor(*this);
     _file << "\tmov [" << _variables[stat->get_identifier_code()].get_asm_name() << "], "  << _registers[reg].get_name() << "\n\n";
@@ -213,13 +227,14 @@ int code_generator::node_interaction(const binary_expression* expr){
         case ast_node_type::LESS: return less_reg(left_reg,right_reg);
         case ast_node_type::LESS_EQ: return less_equal_reg(left_reg,right_reg);
         default:
-            throw std::runtime_error("undefined binary expression operator\n");
+            throw std::runtime_error("undefined binary expression operator");
     }
 }
 void code_generator::node_interaction(const print_statement* stat) {
     print_reg(stat->get_expression()->accept_visitor(*this));
-    if(stat->get_next())
+    if(stat->get_next()){
         stat->get_next()->accept_visitor(*this);
+    }
 }
 void code_generator::node_interaction(const assignment_statement* stat){
     assign_to_variable(stat);
@@ -234,16 +249,24 @@ void code_generator::node_interaction(const variable_declaration* stat){
     }
 }
 void code_generator::node_interaction(const class compound_statement* stat){
-    return;
+    if(stat->get_inner_statement()){
+        stat->get_inner_statement()->accept_visitor(*this);
+    }
+    if(stat->get_next()){
+        throw std::runtime_error("my language doesn't support {statements} statements yet(");
+    }
 }
 void code_generator::node_interaction(const class if_statement* stat){
-
+    if_conditional(stat);
+    if(stat->get_next()){
+        stat->get_next()->accept_visitor(*this);
+    }
 }
 
 code_generator::code_generator(const std::string& output_filename){
     _file.open(output_filename);
     if(!_file.is_open())
-        throw std::runtime_error("failed to open the file: " + output_filename + "\n");
+        throw std::runtime_error("failed to open the file: " + output_filename);
 }
 
 code_generator::~code_generator(){
