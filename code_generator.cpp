@@ -211,7 +211,7 @@ void code_generator::declare_variable(const variable_declaration* stat){
 void code_generator::print_reg(int reg){
     check_valid_storage(_registers[reg]);
 
-    _file  << "\n\tmov rdi, d_fmt\n"
+    _file   << "\n\tmov rdi, d_fmt\n"
             << "\tmov rsi, " << _registers[reg].get_name() << '\n'
             << "\tcall printf\n\n";
     _registers[reg].become_free();

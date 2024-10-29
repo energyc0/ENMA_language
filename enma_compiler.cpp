@@ -10,7 +10,8 @@
 
 extern std::unique_ptr<symbol_table> global_sym_table;
 
-ENMA_compiler::ENMA_compiler(const char* exe_name): _executable_name(exe_name){}
+ENMA_compiler::ENMA_compiler(const char* exe_name, bool is_verbose):
+ _executable_name(exe_name), _is_verbose(is_verbose){}
 
 ENMA_compiler::~ENMA_compiler(){}
 
@@ -183,15 +184,18 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
         bool result;
 
         lexer my_lexer(filename);
-        std::cout << filename << " - compiling.\n";
+        if(_is_verbose)
+            std::cout << filename << " - compiling.\n";
         auto tokens = my_lexer.lexical_analysis();
-        ENMA_debugger::debug_tokens(tokens);
+        
+        if(_is_verbose)
+            ENMA_debugger::debug_tokens(tokens);
 
         token_storage storage(tokens);
         auto ast = _parser.generate_ast(storage, result);
         if(!result){
             return false;
-        }else{
+        }else if(_is_verbose){
             auto temp_root = ast;
             ENMA_debugger::debug_ast(temp_root);
             std::cout << '\n';
@@ -204,7 +208,8 @@ bool ENMA_compiler::process_input_file(const std::string& filename){
         if(!result){
             return false;
         }
-        std::cout << "generated " << filename.substr(0, filename.size() - 2) << "asm\n";
+        if(_is_verbose)
+            std::cout << "generated " << filename.substr(0, filename.size() - 2) << "asm\n";
         return true;
     }catch(std::runtime_error& err){
         std::cerr << err.what();

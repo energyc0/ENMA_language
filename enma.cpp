@@ -12,12 +12,14 @@ int main(int argc, char* argv[]){
         std::cout << std::left << "Usage:\n" << 
         "enma [options] <path-to-source-files>\n" << 
         "Options\n" <<
-        "-o <executable-name>\tto specify the executable name\n";
+        "-o <executable-name>\tto specify the executable name\n" <<
+        "-v to output details\n";
         return 0;
     }
 
     std::vector<const char*> input_files;
     int exe_name_idx = -1;
+    bool is_verbose = false;
     for(int i = 1; i < argc; i++){
         if(strcmp(argv[i], "-o") == 0){
             if(i + 1 >= argc){
@@ -25,11 +27,13 @@ int main(int argc, char* argv[]){
                 return 1;
             }
             exe_name_idx = ++i;
+        }else if(strcmp(argv[i], "-v") == 0){
+            is_verbose = true;
         }else{
             input_files.push_back(argv[i]);
         }
     }
-    ENMA_compiler compiler(exe_name_idx == -1 ? "output" : argv[exe_name_idx]);
+    ENMA_compiler compiler(exe_name_idx == -1 ? "output" : argv[exe_name_idx], is_verbose);
 
     if(compiler.process_input(input_files)){
         return 0;

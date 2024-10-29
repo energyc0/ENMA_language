@@ -8,18 +8,13 @@ extern std::unique_ptr<symbol_table> global_sym_table;
 
 ast_node::ast_node(ast_node_type t, int val,
      const std::shared_ptr<ast_node>& left, const std::shared_ptr<ast_node>& right) :
-      _val(val), _left(left), _right(right), _type(t){
-        std::cout << "ast_node copied\n";
-}
+      _val(val), _left(left), _right(right), _type(t){}
 
 ast_node::ast_node(ast_node_type t, int val,
      std::shared_ptr<ast_node>&& left, std::shared_ptr<ast_node>&& right):
-      _val(val), _left(std::move(left)), _right(std::move(right)), _type(t){
-        std::cout << "ast_node moved\n";
-}
+      _val(val), _left(std::move(left)), _right(std::move(right)), _type(t){}
 
 ast_node::~ast_node(){
-    std::cout << "deleted node\n";
     if(_left)
         _left.reset();
     if(_right)
