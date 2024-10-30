@@ -103,6 +103,7 @@ std::ostream& operator<<(std::ostream& os, const keyword_type& t){
         break;
     case keyword_type::PRINT:     os << "print";
         break;
+    case keyword_type::TO:        os << "to";
     default:
         os << "*undefined keyword type*";
         break;

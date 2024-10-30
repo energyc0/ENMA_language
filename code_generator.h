@@ -110,6 +110,7 @@ private:
     void node_interaction(const class compound_statement* stat);
     void node_interaction(const class if_statement* stat);
     void node_interaction(const class while_statement* stat);
+    void node_interaction(const class for_statement* stat);
 
     friend class number_expression;
     friend class identifier_expression;
@@ -120,6 +121,7 @@ private:
     friend class compound_statement;
     friend class if_statement;
     friend class while_statement;
+    friend class for_statement;
 public:
     code_generator(const std::string& output_filename);
 

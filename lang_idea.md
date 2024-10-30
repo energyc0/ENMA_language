@@ -17,14 +17,17 @@
                 ;
 
     statement:    print_statement
-                | declaration_statement
-                | assignment_statement
+                | variable_statement
                 | compound_statement
                 | if_statement
+                | for_statement
                 ;
 
     print_statement: "print" "(" expression ")" ";"
 
+    variable_statement: | declaration_statement
+                        | assignment_statement
+                        ;
     declaration_statement: "let" identifier "=" expression ";"
 
     assignment_statement: identifier "=" expression ";"
@@ -38,6 +41,8 @@
                     ;
 
     if_head: "if" "=>" "(" unary_expression ")" compound_statement ;
+
+    for_statement: "for" "=>" "(" variable_statement "to" expression [ ":" assignment_statement ] ")" compound_statement ;
 
     expression  : number
                 | identifier

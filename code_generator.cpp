@@ -260,7 +260,7 @@ void code_generator::node_interaction(const variable_declaration* stat){
         stat->get_next()->accept_visitor(*this);
     }
 }
-void code_generator::node_interaction(const class compound_statement* stat){
+void code_generator::node_interaction(const compound_statement* stat){
     if(stat->get_inner_statement()){
         stat->get_inner_statement()->accept_visitor(*this);
     }
@@ -268,19 +268,21 @@ void code_generator::node_interaction(const class compound_statement* stat){
         throw std::runtime_error("my language doesn't support {statements} statements yet(");
     }
 }
-void code_generator::node_interaction(const class if_statement* stat){
+void code_generator::node_interaction(const if_statement* stat){
     if_conditional(stat);
     if(stat->get_next()){
         stat->get_next()->accept_visitor(*this);
     }
 }
-void code_generator::node_interaction(const class while_statement* stat){
+void code_generator::node_interaction(const while_statement* stat){
     while_loop(stat);
     if(stat->get_next()){
         stat->get_next()->accept_visitor(*this);
     }
 }
+void code_generator::node_interaction(const for_statement* stat){
 
+}
 
 code_generator::code_generator(const std::string& output_filename){
     _file.open(output_filename);

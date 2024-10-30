@@ -48,7 +48,8 @@ enum class keyword_type{
     ELSE,
     FOR,
     WHILE,
-    PRINT
+    PRINT,
+    TO
 };
 std::ostream& operator<<(std::ostream& os, const keyword_type& t);
 

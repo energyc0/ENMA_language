@@ -181,6 +181,14 @@ void lexer::process_line(const std::string& line){
                     emplace_identifier(line,i);  
                 }
                 break;
+            case 't':
+                if(i + 1 < n && (i + 2 >= n || isspace(line[i+2])) && line.substr(i,2) == "to"){
+                    i++;
+                    _tokens.emplace_back(std::make_shared<token_keyword>(keyword_type::TO));
+                }else{
+                    emplace_identifier(line,i);  
+                }
+                break;
             default:
                 emplace_identifier(line,i);
                 break;

@@ -16,6 +16,10 @@ ENMA_compiler::ENMA_compiler(const char* exe_name, bool is_verbose):
 ENMA_compiler::~ENMA_compiler(){}
 
 bool ENMA_compiler::process_input(const std::vector<const char*>& args){
+    if(args.empty()){
+        std::cerr << "no input files\n";
+        return false;
+    }
     for(auto& arg : args){
         if(!process_input_file(arg)){
             return false;

@@ -296,6 +296,41 @@ void assignment_statement::set_expression(const std::shared_ptr<expression>& exp
     _left = expr;
 }
 
+void for_statement::check_validity() const{
+    if(!_left)
+        return;
+    if(_left->get_type() != ast_node_type::ASSIGN && _left->get_type() != ast_node_type::VAR_DECL){
+        throw std::runtime_error("for-loop start statement must be assignment or variable declaration");
+    }
+}
+
+for_statement::for_statement(const std::shared_ptr<statement>& start_stat,
+const std::shared_ptr<statement>& next,
+const std::shared_ptr<expression>& final_expr,
+const std::shared_ptr<assignment_statement>& stat_after_iter,
+const std::shared_ptr<compound_statement>& inner_stat) : statement(ast_node_type::FOR_LOOP, 0, start_stat, next),
+_final_expr(final_expr), _assign_stat_after(stat_after_iter), _inner_stat(inner_stat){
+    check_validity();
+}
+
+for_statement::for_statement(std::shared_ptr<statement>&& start_stat,
+std::shared_ptr<statement>&& next,
+std::shared_ptr<expression>&& final_expr,
+std::shared_ptr<assignment_statement>&& stat_after_iter,
+std::shared_ptr<compound_statement>&& inner_stat): statement(ast_node_type::FOR_LOOP, 0, std::move(start_stat),std::move(next)),
+_final_expr(std::move(final_expr)), _assign_stat_after(std::move(stat_after_iter)), _inner_stat(std::move(inner_stat)){
+    check_validity();
+}
+
+for_statement::for_statement(const for_statement& stat) : 
+for_statement(std::static_pointer_cast<statement>(stat._left), std::static_pointer_cast<statement>(stat._right),
+ stat._final_expr, stat._assign_stat_after, stat._inner_stat){}
+
+for_statement::for_statement(for_statement&& stat) :
+for_statement(std::static_pointer_cast<statement>(std::move(stat._left)),
+ std::static_pointer_cast<statement>(std::move(stat._right)),
+ std::move(stat._final_expr), std::move(stat._assign_stat_after), std::move(stat._inner_stat)){}
+
 int number_expression::accept_visitor(code_generator& visitor) const{
     return visitor.node_interaction(this);
 }
@@ -329,4 +364,9 @@ int if_statement::accept_visitor(code_generator& visitor) const{
 int while_statement::accept_visitor(code_generator& visitor) const{
     visitor.node_interaction(this);
     return 0;
+}
+
+int for_statement::accept_visitor(code_generator& visitor) const{
+    visitor.node_interaction(this);
+    return 0; 
 }

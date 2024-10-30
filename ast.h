@@ -326,3 +326,62 @@ public:
     virtual int accept_visitor(code_generator& visitor) const;
     friend code_generator;
 };
+
+//value is reserved,
+//left node is for a start statement and right node is for the next node
+//3 additional nodes for a final expression, an assignment statement and an inner statement
+class for_statement : public statement{
+private:
+    //assignment statement after iteration
+    std::shared_ptr<assignment_statement> _assign_stat_after;
+    std::shared_ptr<expression> _final_expr;
+    std::shared_ptr<compound_statement> _inner_stat;
+
+    void check_validity() const;
+public:
+    for_statement(const std::shared_ptr<statement>& start_stat = nullptr,
+    const std::shared_ptr<statement>& next = nullptr,
+    const std::shared_ptr<expression>& final_expr = nullptr,
+    const std::shared_ptr<assignment_statement>& stat_after_iter = nullptr,
+    const std::shared_ptr<compound_statement>& inner_stat = nullptr);
+
+    for_statement(std::shared_ptr<statement>&& start_stat,
+    std::shared_ptr<statement>&& next,
+    std::shared_ptr<expression>&& final_expr,
+    std::shared_ptr<assignment_statement>&& stat_after_iter,
+     std::shared_ptr<compound_statement>&& inner_stat);
+
+    for_statement(const for_statement& stat);
+    for_statement(for_statement&& stat);
+
+    inline void set_final_expression(const std::shared_ptr<expression>& expr)noexcept{
+        _final_expr = expr;
+    }
+    inline std::shared_ptr<expression> get_final_expression() const noexcept{
+        return _final_expr;
+    }
+
+    inline void set_start_statement(const std::shared_ptr<statement>& stat){
+        check_validity();
+        _left = stat;
+    }
+    inline std::shared_ptr<statement> get_start_statement() const noexcept{
+        return std::static_pointer_cast<statement>(_left);
+    }
+
+    inline void set_inner_statement(const std::shared_ptr<compound_statement>& stat) noexcept{
+        _inner_stat = stat;
+    }
+    inline std::shared_ptr<compound_statement> get_inner_statement() const noexcept{
+        return _inner_stat;
+    };
+
+    inline void set_after_iter_statement(const std::shared_ptr<assignment_statement>& stat) noexcept{
+        _assign_stat_after = stat;
+    }
+    inline std::shared_ptr<assignment_statement> get_after_iter_statement() const noexcept{
+        return _assign_stat_after;
+    };
+    virtual int accept_visitor(code_generator& visitor) const;
+    friend code_generator;
+};
