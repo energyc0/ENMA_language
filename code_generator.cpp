@@ -158,8 +158,8 @@ int code_generator::div_reg(int left, int right){
     check_valid_storage(_registers[left], _registers[right]);
 
     _file  << "\tmov rax, " << _registers[left].get_name() << "\n"
-            << "\txor rdx, rdx\n"
-            << "\tdiv " << _registers[right].get_name() << '\n'
+            << "\tcqo\n"
+            << "\tidiv " << _registers[right].get_name() << '\n'
             << "\tmov " << _registers[left].get_name() << ", rax\n";
     _registers[right].become_free();
     return left;

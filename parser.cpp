@@ -46,8 +46,16 @@ void token_storage::skip_new_lines(){
     }
 }
 
+bool parser::is_end_binary_expression_token(const std::shared_ptr<token>& t) const noexcept{
+    return  is_match(t,operator_type::RPAR) || 
+    is_match(t,punctuation_type::SEMICOLON) ||
+    is_match(t, punctuation_type::RBRACE) ||
+    is_match(t, keyword_type::TO) || 
+    is_match(t,punctuation_type::COLON);
+}
+
 arithmetical_operation parser::reinterpret_arith_op(const std::shared_ptr<token>& t){
-    if(is_match(t, punctuation_type::SEMICOLON) || is_match(t, operator_type::RPAR)){
+    if(is_end_binary_expression_token(t)){
         return arithmetical_operation::END_EXPR;
     }else if(!is_match(t, token_type::OPERATOR)){
         throw parsing_error("expected arithmetical operation", *_tokens);
@@ -132,10 +140,7 @@ std::shared_ptr<expression> parser::bin_expr(int prev_op_precedence){
 
         left = std::static_pointer_cast<expression>(std::make_shared<binary_expression>(reinterpret_arith_op(t), left, right));
         t = _tokens->get_current();
-        if(is_match(t,punctuation_type::SEMICOLON) ||
-        is_match(t, punctuation_type::RBRACE) ||
-        is_match(t, keyword_type::TO),
-        is_match(t,punctuation_type::COLON)) {
+        if(is_end_binary_expression_token(t)) {
             break;
         }
     }
@@ -287,11 +292,12 @@ std::shared_ptr<for_statement> parser::parse_for_statement(){
         throw parsing_error("left parenthesis expected", *_tokens);
     }
 
+    t = _tokens->get_next();
     std::shared_ptr<statement_with_id> start_statement = nullptr;
     if(is_match(t,token_type::IDENTIFIER)){
-        start_statement = parse_assignment_statement();
+        start_statement = parse_assignment_statement(false);
     }else if(is_match(t,keyword_type::LET)){
-        start_statement = parse_variable_declaration();
+        start_statement = parse_variable_declaration(false);
     }else{
         throw parsing_error("assignment or variable declaration statement expected", *_tokens);
     }
@@ -300,13 +306,14 @@ std::shared_ptr<for_statement> parser::parse_for_statement(){
     if(!is_match(t,keyword_type::TO)){
         throw parsing_error("'to' keyword expected", *_tokens);
     }
-
+    _tokens->next();
     auto final_expr = parse_binary_expression();
 
 
     std::shared_ptr<expression> expr_after_iter = nullptr;
     t = _tokens->get_current();
     if(is_match(t,punctuation_type::COLON)){
+        _tokens->next();
         expr_after_iter = parse_binary_expression();
         t = _tokens->get_current();
     }
@@ -359,7 +366,7 @@ std::shared_ptr<while_statement> parser::parse_while_statement(){
     return std::make_shared<while_statement>(conditional_expr, nullptr, inner_statements);
 }
 
-std::shared_ptr<class assignment_statement> parser::parse_assignment_statement(){
+std::shared_ptr<class assignment_statement> parser::parse_assignment_statement(bool expect_semicolon){
     auto t = _tokens->get_current();
     if(!is_match(t, token_type::IDENTIFIER)){
         throw parsing_error("identifier expected", *_tokens);
@@ -378,16 +385,19 @@ std::shared_ptr<class assignment_statement> parser::parse_assignment_statement()
     if(!expr){
         throw parsing_error("expression expected", *_tokens);
     }
-    t = _tokens->get_current();
-    if(!is_match(t,punctuation_type::SEMICOLON)){
-        throw parsing_error("semicolon expected", *_tokens);
+
+    if(expect_semicolon){
+        t = _tokens->get_current();
+        if(!is_match(t,punctuation_type::SEMICOLON)){
+            throw parsing_error("semicolon expected", *_tokens);
+        }
+        _tokens->next();
     }
-    _tokens->next();
 
     return std::make_shared<assignment_statement>(t_id->get_identifier_code(), expr);
 }
 
-std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
+std::shared_ptr<variable_declaration> parser::parse_variable_declaration(bool expect_semicolon){
     auto t = _tokens->get_current();
     if(!is_match(t, keyword_type::LET)){
         throw parsing_error("'let' keyword expected", *_tokens);
@@ -415,11 +425,13 @@ std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
         throw parsing_error("expression expected", *_tokens);
     }
 
-    t = _tokens->get_current();
-    if(!is_match(t,punctuation_type::SEMICOLON)){
-        throw parsing_error("semicolon expected", *_tokens);
+    if(expect_semicolon){
+        t = _tokens->get_current();
+        if(!is_match(t,punctuation_type::SEMICOLON)){
+            throw parsing_error("semicolon expected", *_tokens);
+        }
+        _tokens->next();
     }
-    _tokens->next();
     return std::make_shared<variable_declaration>(id_token->get_identifier_code(), expr);
 }
 

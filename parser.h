@@ -53,14 +53,16 @@ private:
     //declared identifiers id to check if a variable is not declared
     std::unordered_set<int> _declared_identifiers;
 private:
+    bool is_end_binary_expression_token(const std::shared_ptr<token>& t) const noexcept;
+
     arithmetical_operation reinterpret_arith_op(const class std::shared_ptr<class token>& t);
     int get_arith_op_precedence(arithmetical_operation op);
     std::shared_ptr<class expression> get_primary_expr();
     std::shared_ptr<class expression> bin_expr(int prev_op_precedence);
     std::shared_ptr<class expression> parse_binary_expression();
     std::shared_ptr<class print_statement> parse_print();
-    std::shared_ptr<class variable_declaration> parse_variable_declaration();
-    std::shared_ptr<class assignment_statement> parse_assignment_statement();
+    std::shared_ptr<class variable_declaration> parse_variable_declaration(bool expect_semicolon = true);
+    std::shared_ptr<class assignment_statement> parse_assignment_statement(bool expect_semicolon = true);
     std::shared_ptr<class if_statement> parse_if_statement();
     std::shared_ptr<class while_statement> parse_while_statement();
     std::shared_ptr<class for_statement> parse_for_statement();
