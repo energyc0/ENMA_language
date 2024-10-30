@@ -62,6 +62,7 @@ private:
     std::vector<some_variable> _variables;
     int _if_clause_count = 0;
     int _while_loop_count = 0;
+    int _for_loop_count = 0;
 private:
     template<class T, class... arg>
     void check_valid_storage(T a, arg ...args) const{
@@ -97,6 +98,7 @@ private:
     void assign_to_variable(const class assignment_statement* stat);
     void if_conditional(const class if_statement* stat);
     void while_loop(const class while_statement* stat);
+    void for_loop(const class for_statement* stat);
 
     void output_postamble();
     void output_variables();
@@ -116,6 +118,7 @@ private:
     friend class identifier_expression;
     friend class binary_expression;
     friend class print_statement;
+    friend class statement_with_id;
     friend class variable_declaration;
     friend class assignment_statement;
     friend class compound_statement;

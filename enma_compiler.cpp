@@ -164,6 +164,19 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
             debug_ast(while_stat->get_next());
             break;
         }
+        case ast_node_type::FOR_LOOP:{
+            const auto& for_stat = std::static_pointer_cast<for_statement>(node);
+            std::cout << "for => (";
+            debug_ast(for_stat->get_start_statement());
+            std::cout << " to ";
+            debug_ast(for_stat->get_final_expression());
+            std::cout << " : ";
+            debug_ast(for_stat->get_after_iter_expression());
+            std::cout << ")";
+            debug_ast(for_stat->get_inner_statement());
+            debug_ast(for_stat->get_next());
+            break;
+        }
         default:
             std::cout << "undefined ast_node_type\n";
             break;

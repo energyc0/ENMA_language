@@ -328,7 +328,7 @@ public:
 
 //value is reserved,
 //left node is for a start statement and right node is for the next node
-//3 additional nodes for a final expression, an assignment statement and an inner statement
+//3 additional nodes for a final expression, an iteration expression and an inner statement
 class for_statement : public statement{
 private:
     //assignment statement after iteration

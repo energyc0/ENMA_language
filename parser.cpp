@@ -323,8 +323,6 @@ std::shared_ptr<for_statement> parser::parse_for_statement(){
     }else{
         throw parsing_error("right parenthesis expected", *_tokens);
     }
-
-    auto stat_after_iter = std::make_shared<assignment_statement>(start_statement->get_identifier_code(), expr_after_iter);
     _tokens->next();
     auto inner_statements = expect_compound_statement();
 

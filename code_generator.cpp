@@ -165,6 +165,26 @@ int code_generator::div_reg(int left, int right){
     return left;
 }
 
+void code_generator::for_loop(const for_statement* stat){
+    auto loop_number = std::to_string(_for_loop_count++);
+    stat->get_start_statement()->accept_visitor(*this);
+    auto iterator_variable = _variables[stat->get_start_statement()->get_identifier_code()].get_asm_name();
+
+    auto id_node = std::make_shared<identifier_expression>(stat->get_start_statement()->get_identifier_code());
+    auto conditional_expr = std::make_shared<binary_expression>(
+        arithmetical_operation::NEQUAL, id_node, stat->get_final_expression());
+        
+    _file   << "\n_FOR_LOOP" << loop_number << ":\n";
+    conditional_expr->accept_visitor(*this);
+    _file   << "\tjz _FOR_LOOP_END" << loop_number << "\n\n";
+    stat->get_inner_statement()->accept_visitor(*this);
+
+    int reg = stat->get_after_iter_expression()->accept_visitor(*this);
+    _file   << "\tadd [" << iterator_variable << "], " << _registers[reg].get_name() << '\n'
+            << "\tjmp _FOR_LOOP" << loop_number << '\n'
+            << "_FOR_LOOP_END" << loop_number << ":\n\n";
+}
+
 void code_generator::while_loop(const while_statement* stat){
     auto loop_number = std::to_string(_while_loop_count++);
     _file   << "_WHILE_COND" << loop_number << ":\n";
@@ -281,7 +301,10 @@ void code_generator::node_interaction(const while_statement* stat){
     }
 }
 void code_generator::node_interaction(const for_statement* stat){
-
+    for_loop(stat);
+    if(stat->get_next()){
+        stat->get_next()->accept_visitor(*this);
+    }
 }
 
 code_generator::code_generator(const std::string& output_filename){
