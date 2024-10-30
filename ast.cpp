@@ -8,13 +8,14 @@ extern std::unique_ptr<symbol_table> global_sym_table;
 
 ast_node::ast_node(ast_node_type t, int val,
      const std::shared_ptr<ast_node>& left, const std::shared_ptr<ast_node>& right) :
-      _val(val), _left(left), _right(right), _type(t){}
+      _val(val), _left(left), _right(right), _type(t){std::cout << "ast node created\n";}
 
 ast_node::ast_node(ast_node_type t, int val,
      std::shared_ptr<ast_node>&& left, std::shared_ptr<ast_node>&& right):
-      _val(val), _left(std::move(left)), _right(std::move(right)), _type(t){}
+      _val(val), _left(std::move(left)), _right(std::move(right)), _type(t){std::cout << "ast node created\n";}
 
 ast_node::~ast_node(){
+    std::cout << "ast node destroyed\n";
     if(_left)
         _left.reset();
     if(_right)
@@ -227,73 +228,73 @@ print_statement& print_statement::operator=(const print_statement& stat){
     return *this;
 }
 
-variable_declaration::variable_declaration() noexcept : statement(ast_node_type::VAR_DECL), _is_id_set(false){}
+statement_with_id::statement_with_id(ast_node_type t) : statement(t), _is_id_set(false){}
+statement_with_id::statement_with_id(ast_node_type t, int id_code, const std::shared_ptr<expression>& expr) :
+ statement(t,id_code, expr, nullptr), _is_id_set(true){
+    if(!global_sym_table->has_identifier(id_code))
+        throw std::runtime_error("an identifier with the id code doesn't exist: " + std::to_string(id_code));
+
+ }
+
+statement_with_id::statement_with_id(ast_node_type t, const std::string& id, const std::shared_ptr<expression>& expr) noexcept :
+ statement(t,0, expr, nullptr), _is_id_set(true){
+
+ }
+ 
+statement_with_id::statement_with_id(ast_node_type t, int id_code, std::shared_ptr<expression>&& expr) :
+ statement(t,id_code, expr, nullptr), _is_id_set(true){
+    if(!global_sym_table->has_identifier(id_code))
+        throw std::runtime_error("an identifier with the id code doesn't exist: " + std::to_string(id_code));
+
+ }
+
+statement_with_id::statement_with_id(ast_node_type t, const std::string& id, std::shared_ptr<expression>&& expr) noexcept :
+ statement(t,0, expr, nullptr), _is_id_set(true){
+
+ }
+
+void statement_with_id::set_identifier(const std::string& id){
+    if(!global_sym_table->has_identifier(id)){
+        throw std::runtime_error("an identifier doesn't exist: " + id);
+    }
+    _val = global_sym_table->get_identifier(id);
+    _is_id_set = true;
+}
+std::string statement_with_id::get_identifier() const{
+    if(!_is_id_set)
+        throw std::runtime_error("undefined behaviour: identifier is not set");
+    return global_sym_table->get_identifier(_val);
+}
+int statement_with_id::get_identifier_code() const{
+    if(!_is_id_set)
+        throw std::runtime_error("undefined behaviour: identifier is not set");
+    return _val;
+}
+void statement_with_id::set_expression(const std::shared_ptr<expression>& expr){
+    if(!expr)
+        throw std::runtime_error("expression node == nullptr");
+    _left = expr;
+}
+
+variable_declaration::variable_declaration() noexcept : statement_with_id(ast_node_type::VAR_DECL){}
 
 variable_declaration::variable_declaration(int id_code, const std::shared_ptr<expression>& expr) 
-: statement(ast_node_type::VAR_DECL, id_code, expr, nullptr), _is_id_set(true){
-    if(!global_sym_table->has_identifier(id_code))
-        throw std::runtime_error("an identifier with the id code doesn't exist: " + std::to_string(id_code));
-}
+: statement_with_id(ast_node_type::VAR_DECL, id_code, expr){}
 variable_declaration::variable_declaration(const std::string& id, const std::shared_ptr<expression>& expr) noexcept :
-statement(ast_node_type::VAR_DECL, global_sym_table->try_set_identifier(id), expr, nullptr), _is_id_set(true){}
+statement_with_id(ast_node_type::VAR_DECL, global_sym_table->try_set_identifier(id), expr){}
 
-void variable_declaration::try_set_identifier(const std::string& id) noexcept{
-    _is_id_set = true;
-    _val = global_sym_table->try_set_identifier(id);
-}
-std::string variable_declaration::get_identifier() const{
-    if(!_is_id_set)
-        throw std::runtime_error("undefined behaviour: identifier is not set");
-    return global_sym_table->get_identifier(_val);
-}
-int variable_declaration::get_identifier_code() const{
-    if(!_is_id_set)
-        throw std::runtime_error("undefined behaviour: identifier is not set");
-    return _val;
-}
-void variable_declaration::set_expression(const std::shared_ptr<expression>& expr){
-    if(!expr)
-        throw std::runtime_error("expression node == nullptr");
-    _left = expr;
-}
-
-assignment_statement::assignment_statement() noexcept : statement(ast_node_type::ASSIGN), _is_id_set(false){}
+assignment_statement::assignment_statement() noexcept : statement_with_id(ast_node_type::ASSIGN){}
 //throw an std::runtime_error exception if an identifier doesn't exist
 assignment_statement::assignment_statement(int id_code, const std::shared_ptr<expression>& expr):
- statement(ast_node_type::ASSIGN, id_code, expr, nullptr), _is_id_set(true){
-    if(!global_sym_table->has_identifier(id_code))
-        throw std::runtime_error("an identifier with the id code doesn't exist: " + std::to_string(id_code));
-}
+ statement_with_id(ast_node_type::ASSIGN, id_code, expr){}
 //throw an std::runtime_error exception if an identifier doesn't exist
 assignment_statement::assignment_statement(const std::string& id, const std::shared_ptr<expression>& expr):
- statement(ast_node_type::ASSIGN), _is_id_set(true){
+ statement_with_id(ast_node_type::ASSIGN){
     if(!global_sym_table->has_identifier(id))
         throw std::runtime_error("an identifier doesn't exist: " + id);
     _left = expr;
-    _val = global_sym_table->try_set_identifier(id);
-}
-
-void assignment_statement::set_identifier(const std::string& id){
-    if(!global_sym_table->has_identifier(id))
-        throw std::runtime_error("an identifier doesn't exist: " + id);
     _val = global_sym_table->try_set_identifier(id);
     _is_id_set = true;
-}
-std::string assignment_statement::get_identifier() const{
-    if(!_is_id_set)
-        throw std::runtime_error("undefined behaviour: identifier is not set");
-    return global_sym_table->get_identifier(_val);
-}
-
-int assignment_statement::get_identifier_code() const{
-    if(!_is_id_set)
-        throw std::runtime_error("undefined behaviour: identifier is not set");
-    return _val;
-}
-void assignment_statement::set_expression(const std::shared_ptr<expression>& expr){
-    if(!expr)
-        throw std::runtime_error("expression node == nullptr");
-    _left = expr;
 }
 
 void for_statement::check_validity() const{
@@ -304,32 +305,32 @@ void for_statement::check_validity() const{
     }
 }
 
-for_statement::for_statement(const std::shared_ptr<statement>& start_stat,
+for_statement::for_statement(const std::shared_ptr<statement_with_id>& start_stat,
 const std::shared_ptr<statement>& next,
 const std::shared_ptr<expression>& final_expr,
-const std::shared_ptr<assignment_statement>& stat_after_iter,
+const std::shared_ptr<expression>& stat_after_iter,
 const std::shared_ptr<compound_statement>& inner_stat) : statement(ast_node_type::FOR_LOOP, 0, start_stat, next),
-_final_expr(final_expr), _assign_stat_after(stat_after_iter), _inner_stat(inner_stat){
+_final_expr(final_expr), _expr_after_iter(stat_after_iter), _inner_stat(inner_stat){
     check_validity();
 }
 
-for_statement::for_statement(std::shared_ptr<statement>&& start_stat,
+for_statement::for_statement(std::shared_ptr<statement_with_id>&& start_stat,
 std::shared_ptr<statement>&& next,
 std::shared_ptr<expression>&& final_expr,
-std::shared_ptr<assignment_statement>&& stat_after_iter,
+std::shared_ptr<expression>&& stat_after_iter,
 std::shared_ptr<compound_statement>&& inner_stat): statement(ast_node_type::FOR_LOOP, 0, std::move(start_stat),std::move(next)),
-_final_expr(std::move(final_expr)), _assign_stat_after(std::move(stat_after_iter)), _inner_stat(std::move(inner_stat)){
+_final_expr(std::move(final_expr)), _expr_after_iter(std::move(stat_after_iter)), _inner_stat(std::move(inner_stat)){
     check_validity();
 }
 
 for_statement::for_statement(const for_statement& stat) : 
-for_statement(std::static_pointer_cast<statement>(stat._left), std::static_pointer_cast<statement>(stat._right),
- stat._final_expr, stat._assign_stat_after, stat._inner_stat){}
+for_statement(std::static_pointer_cast<statement_with_id>(stat._left), std::static_pointer_cast<statement>(stat._right),
+ stat._final_expr, stat._expr_after_iter, stat._inner_stat){}
 
 for_statement::for_statement(for_statement&& stat) :
-for_statement(std::static_pointer_cast<statement>(std::move(stat._left)),
+for_statement(std::static_pointer_cast<statement_with_id>(std::move(stat._left)),
  std::static_pointer_cast<statement>(std::move(stat._right)),
- std::move(stat._final_expr), std::move(stat._assign_stat_after), std::move(stat._inner_stat)){}
+ std::move(stat._final_expr), std::move(stat._expr_after_iter), std::move(stat._inner_stat)){}
 
 int number_expression::accept_visitor(code_generator& visitor) const{
     return visitor.node_interaction(this);

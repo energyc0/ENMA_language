@@ -63,6 +63,7 @@ private:
     std::shared_ptr<class assignment_statement> parse_assignment_statement();
     std::shared_ptr<class if_statement> parse_if_statement();
     std::shared_ptr<class while_statement> parse_while_statement();
+    std::shared_ptr<class for_statement> parse_for_statement();
     std::shared_ptr<class compound_statement> expect_compound_statement();
     std::shared_ptr<class statement> parse_statement(const class std::shared_ptr<class token>& t);
     std::shared_ptr<class statement> expect_statement();

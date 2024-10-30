@@ -132,7 +132,10 @@ std::shared_ptr<expression> parser::bin_expr(int prev_op_precedence){
 
         left = std::static_pointer_cast<expression>(std::make_shared<binary_expression>(reinterpret_arith_op(t), left, right));
         t = _tokens->get_current();
-        if(is_match(t,punctuation_type::SEMICOLON) || is_match(t, punctuation_type::RBRACE)){
+        if(is_match(t,punctuation_type::SEMICOLON) ||
+        is_match(t, punctuation_type::RBRACE) ||
+        is_match(t, keyword_type::TO),
+        is_match(t,punctuation_type::COLON)) {
             break;
         }
     }
@@ -164,6 +167,7 @@ std::shared_ptr<statement> parser::parse_statement(const std::shared_ptr<token>&
                 case keyword_type::LET: return parse_variable_declaration();
                 case keyword_type::IF: return parse_if_statement();
                 case keyword_type::WHILE: return parse_while_statement();
+                case keyword_type::FOR: return parse_for_statement();
                 default:
                     throw parsing_error("unexpected keyword", *_tokens);
             }
@@ -267,6 +271,60 @@ std::shared_ptr<if_statement> parser::parse_if_statement(){
     return std::make_shared<if_statement>(cond_expr, nullptr, inner_if_head_stat,inner_else_stat);
 }
 
+std::shared_ptr<for_statement> parser::parse_for_statement(){
+    auto t = _tokens->get_current();
+    if(!is_match(t,keyword_type::FOR)){
+        throw parsing_error("'for' keyword expected", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,punctuation_type::ARROW)){
+        throw parsing_error("'=>' expected", *_tokens);
+    }
+
+    t = _tokens->get_next();
+    if(!is_match(t,operator_type::LPAR)){
+        throw parsing_error("left parenthesis expected", *_tokens);
+    }
+
+    std::shared_ptr<statement_with_id> start_statement = nullptr;
+    if(is_match(t,token_type::IDENTIFIER)){
+        start_statement = parse_assignment_statement();
+    }else if(is_match(t,keyword_type::LET)){
+        start_statement = parse_variable_declaration();
+    }else{
+        throw parsing_error("assignment or variable declaration statement expected", *_tokens);
+    }
+
+    t = _tokens->get_current();
+    if(!is_match(t,keyword_type::TO)){
+        throw parsing_error("'to' keyword expected", *_tokens);
+    }
+
+    auto final_expr = parse_binary_expression();
+
+
+    std::shared_ptr<expression> expr_after_iter = nullptr;
+    t = _tokens->get_current();
+    if(is_match(t,punctuation_type::COLON)){
+        expr_after_iter = parse_binary_expression();
+        t = _tokens->get_current();
+    }
+    if(is_match(t,operator_type::RPAR)){
+        if(!expr_after_iter)
+            expr_after_iter = std::make_shared<number_expression>(1);
+    }else{
+        throw parsing_error("right parenthesis expected", *_tokens);
+    }
+
+    auto stat_after_iter = std::make_shared<assignment_statement>(start_statement->get_identifier_code(), expr_after_iter);
+    _tokens->next();
+    auto inner_statements = expect_compound_statement();
+
+    return std::make_shared<for_statement>(std::move(start_statement), nullptr,
+     std::move(final_expr), std::move(expr_after_iter), std::move(inner_statements));
+}
+
 std::shared_ptr<while_statement> parser::parse_while_statement(){
     auto t = _tokens->get_current();
     if(!is_match(t,keyword_type::WHILE)){
@@ -353,12 +411,11 @@ std::shared_ptr<variable_declaration> parser::parse_variable_declaration(){
     _tokens->next();
 
     auto expr = parse_binary_expression();
-    t = _tokens->get_current();
     if(!expr){
         throw parsing_error("expression expected", *_tokens);
     }
 
-
+    t = _tokens->get_current();
     if(!is_match(t,punctuation_type::SEMICOLON)){
         throw parsing_error("semicolon expected", *_tokens);
     }

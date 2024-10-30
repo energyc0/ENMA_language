@@ -158,7 +158,7 @@ void lexer::process_line(const std::string& line){
                 }
                 break;
             case 'f':
-                if(i + 2 < n && (i + 3 >= n || isspace(line[i+3] || line[i+3] == '(')) && line.substr(i,3) == "for"){
+                if(i + 2 < n && (i + 3 >= n || isspace(line[i+3]) || line[i+3] == '=') && line.substr(i,3) == "for"){
                     i+=2;
                     _tokens.emplace_back(std::make_shared<token_keyword>(keyword_type::FOR));
                 }else{

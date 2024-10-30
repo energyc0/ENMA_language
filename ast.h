@@ -239,10 +239,33 @@ public:
     friend code_generator;
 };
 
-//value is used for identifier code, left node is for the expression and right node is for the next
-class variable_declaration : public statement{
-private:
+//value is used for identifier, right node is for the next node and left node is for the expression
+class statement_with_id : public statement{
+protected:
     bool _is_id_set;
+protected:
+    statement_with_id(ast_node_type t);
+    statement_with_id(ast_node_type t, int id_code, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>());
+    statement_with_id(ast_node_type t, const std::string& id, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>()) noexcept;
+    statement_with_id(ast_node_type t, int id_code, std::shared_ptr<expression>&& expr);
+    statement_with_id(ast_node_type t, const std::string& id, std::shared_ptr<expression>&& expr) noexcept;
+
+public:
+    virtual ~statement_with_id(){}
+
+    virtual void set_identifier(const std::string& id);
+    virtual std::string get_identifier() const;
+    virtual int get_identifier_code() const;
+
+    //throw an std::runtime_error if expr == nullptr
+    virtual void set_expression(const std::shared_ptr<expression>& expr);
+    virtual inline std::shared_ptr<expression> get_expression() const noexcept{
+        return std::static_pointer_cast<expression>(_left);
+    }
+};
+
+//value is used for identifier code, left node is for the expression and right node is for the next
+class variable_declaration : public statement_with_id{
 public:
     variable_declaration() noexcept;
     //throw an std::runtime_error exception if an identifier doesn't exist
@@ -251,43 +274,19 @@ public:
     variable_declaration(const std::string& id, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>()) noexcept;
 
     //set the code of an identifier, create a new one identifier if it doesn't exist 
-    void try_set_identifier(const std::string& id) noexcept;
-    std::string get_identifier() const;
-    int get_identifier_code() const;
-
-    void set_expression(const std::shared_ptr<expression>& expr);
-    inline std::shared_ptr<expression> get_expression() const noexcept{
-        return std::static_pointer_cast<expression>(_left);
-    }
 
     virtual int accept_visitor(code_generator& visitor) const;
     friend code_generator;
 };
 
 //value is used for identifier code, left node is for the expression and right node is for the next
-class assignment_statement : public statement{
-private:
-    bool _is_id_set;
+class assignment_statement : public statement_with_id{
 public:
     assignment_statement() noexcept;
     //throw an std::runtime_error exception if an identifier doesn't exist
     assignment_statement(int id_code, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>());
     //throw an std::runtime_error exception if an identifier doesn't exist
     assignment_statement(const std::string& id, const std::shared_ptr<expression>& expr = std::shared_ptr<expression>());
-
-    //throw an std::runtime_error if the id doesn't exist
-    void set_identifier(const std::string& id);
-    //throw an std::runtime_error if the id is not set
-    std::string get_identifier() const;
-    //throw an std::runtime_error if the id is not set
-    int get_identifier_code() const;
-
-
-    //throw an std::runtime_error if expr == nullptr
-    void set_expression(const std::shared_ptr<expression>& expr);
-    inline std::shared_ptr<expression> get_expression() const noexcept{
-        return std::static_pointer_cast<expression>(_left);
-    }
 
     virtual int accept_visitor(code_generator& visitor) const;
     friend code_generator;
@@ -333,22 +332,22 @@ public:
 class for_statement : public statement{
 private:
     //assignment statement after iteration
-    std::shared_ptr<assignment_statement> _assign_stat_after;
+    std::shared_ptr<expression> _expr_after_iter;
     std::shared_ptr<expression> _final_expr;
     std::shared_ptr<compound_statement> _inner_stat;
 
     void check_validity() const;
 public:
-    for_statement(const std::shared_ptr<statement>& start_stat = nullptr,
+    for_statement(const std::shared_ptr<statement_with_id>& start_stat = nullptr,
     const std::shared_ptr<statement>& next = nullptr,
     const std::shared_ptr<expression>& final_expr = nullptr,
-    const std::shared_ptr<assignment_statement>& stat_after_iter = nullptr,
+    const std::shared_ptr<expression>& stat_after_iter = nullptr,
     const std::shared_ptr<compound_statement>& inner_stat = nullptr);
 
-    for_statement(std::shared_ptr<statement>&& start_stat,
+    for_statement(std::shared_ptr<statement_with_id>&& start_stat,
     std::shared_ptr<statement>&& next,
     std::shared_ptr<expression>&& final_expr,
-    std::shared_ptr<assignment_statement>&& stat_after_iter,
+    std::shared_ptr<expression>&& expr_after_iter,
      std::shared_ptr<compound_statement>&& inner_stat);
 
     for_statement(const for_statement& stat);
@@ -361,12 +360,12 @@ public:
         return _final_expr;
     }
 
-    inline void set_start_statement(const std::shared_ptr<statement>& stat){
+    inline void set_start_statement(const std::shared_ptr<statement_with_id>& stat){
         check_validity();
         _left = stat;
     }
-    inline std::shared_ptr<statement> get_start_statement() const noexcept{
-        return std::static_pointer_cast<statement>(_left);
+    inline std::shared_ptr<statement_with_id> get_start_statement() const noexcept{
+        return std::static_pointer_cast<statement_with_id>(_left);
     }
 
     inline void set_inner_statement(const std::shared_ptr<compound_statement>& stat) noexcept{
@@ -376,11 +375,11 @@ public:
         return _inner_stat;
     };
 
-    inline void set_after_iter_statement(const std::shared_ptr<assignment_statement>& stat) noexcept{
-        _assign_stat_after = stat;
+    inline void set_after_iter_expression(const std::shared_ptr<expression>& stat) noexcept{
+        _expr_after_iter = stat;
     }
-    inline std::shared_ptr<assignment_statement> get_after_iter_statement() const noexcept{
-        return _assign_stat_after;
+    inline std::shared_ptr<expression> get_after_iter_expression() const noexcept{
+        return _expr_after_iter;
     };
     virtual int accept_visitor(code_generator& visitor) const;
     friend code_generator;
