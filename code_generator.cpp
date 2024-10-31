@@ -215,9 +215,12 @@ void code_generator::assign_to_variable(const assignment_statement* stat){
     if(stat->get_identifier_code() >= _variables.size()){
         throw std::runtime_error("undeclared identifier");
     }
-    int reg = stat->get_expression()->accept_visitor(*this);
-    _file << "\tmov [" << _variables[stat->get_identifier_code()].get_asm_name() << "], "  << _registers[reg].get_name() << "\n\n";
-    _registers[reg].become_free();
+    //this statement can be without any expression and consist of only an identifier
+    if(stat->get_expression()){
+        int reg = stat->get_expression()->accept_visitor(*this);
+        _file << "\tmov [" << _variables[stat->get_identifier_code()].get_asm_name() << "], "  << _registers[reg].get_name() << "\n\n";
+        _registers[reg].become_free();
+    }
 }
 
 void code_generator::declare_variable(const variable_declaration* stat){

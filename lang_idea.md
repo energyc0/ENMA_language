@@ -42,7 +42,11 @@
 
     if_head: "if" "=>" "(" unary_expression ")" compound_statement ;
 
-    for_statement: "for" "=>" "(" variable_statement "to" expression [ ":" expression ] ")" compound_statement ;
+    for_statement: "for" "=>" "(" for_loop_start_statement "to" expression [ ":" expression ] ")" compound_statement ;
+
+    for_loop_start_statement:     identifier
+                                | variable_statement
+                                ;
 
     expression  : number
                 | identifier

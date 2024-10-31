@@ -19,7 +19,9 @@ public:
 
     std::shared_ptr<class token> get_current() noexcept;
     std::shared_ptr<class token> get_next() noexcept ;
+    std::shared_ptr<class token> check_next() noexcept;
     void next() noexcept;
+
 };
 
 class parsing_error {

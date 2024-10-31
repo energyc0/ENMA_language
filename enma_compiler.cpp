@@ -128,9 +128,12 @@ void ENMA_debugger::debug_ast(const class std::shared_ptr<class ast_node>& node)
         }
         case ast_node_type::ASSIGN:{
             const auto& assign_stat = std::static_pointer_cast<assignment_statement>(node);
-            std::cout << assign_stat->get_identifier() << " = ";
-            debug_ast(assign_stat->get_expression());
-            std::cout << '\n';
+            //this statement can be without any expression and consist of only an identifier
+            if(assign_stat->get_expression()){
+                std::cout << assign_stat->get_identifier() << " = ";
+                debug_ast(assign_stat->get_expression());
+                std::cout << '\n';
+            }
             debug_ast(assign_stat->get_next());
             break;
         }

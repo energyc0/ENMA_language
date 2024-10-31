@@ -29,12 +29,18 @@ std::shared_ptr<token> token_storage::get_next() noexcept {
     return *_iter;
 }
 void token_storage::next() noexcept{
-    if(_iter == _tokens.end()){
-        return;
+    if(_iter != _tokens.end()){
+         ++_iter;
+        _prev_token = _token_number++;
+        skip_new_lines();
     }
-    ++_iter;
-    _prev_token = _token_number++;
-    skip_new_lines();
+}
+
+std::shared_ptr<token> token_storage::check_next() noexcept{
+    auto temp = _iter;
+    std::shared_ptr<token> res = get_next();
+    std::swap(temp,_iter);
+    return res;
 }
 
 void token_storage::skip_new_lines(){
@@ -295,7 +301,14 @@ std::shared_ptr<for_statement> parser::parse_for_statement(){
     t = _tokens->get_next();
     std::shared_ptr<statement_with_id> start_statement = nullptr;
     if(is_match(t,token_type::IDENTIFIER)){
-        start_statement = parse_assignment_statement(false);
+        auto temp = _tokens->check_next();
+        if(is_match(temp,keyword_type::TO)){
+            _tokens->next();
+            auto token_id = std::static_pointer_cast<token_identifier>(t);
+            start_statement = std::make_shared<assignment_statement>(token_id->get_identifier_code());
+        }else{
+            start_statement = parse_assignment_statement(false);
+        }
     }else if(is_match(t,keyword_type::LET)){
         start_statement = parse_variable_declaration(false);
     }else{
@@ -375,6 +388,10 @@ std::shared_ptr<class assignment_statement> parser::parse_assignment_statement(b
     }
 
     t = _tokens->get_next();
+    if(is_match(t, punctuation_type::SEMICOLON)){
+        return std::make_shared<assignment_statement>(t_id->get_identifier_code());
+    }
+
     if(!is_match(t,operator_type::ASSIGN)){
         throw parsing_error("operator '=' expected", *_tokens);
     }

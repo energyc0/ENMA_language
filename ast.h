@@ -280,6 +280,7 @@ public:
 };
 
 //value is used for identifier code, left node is for the expression and right node is for the next
+//this statement can be without any expression and consist of only an identifier
 class assignment_statement : public statement_with_id{
 public:
     assignment_statement() noexcept;
