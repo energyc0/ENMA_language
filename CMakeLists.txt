@@ -4,7 +4,7 @@ project("ENMA"
 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_COMPILER g++)
 add_compile_options("-g")
 
@@ -22,3 +22,5 @@ add_executable("enma"
 "ast.h"
 "ast.cpp"
 "enma.cpp")
+
+message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
