@@ -1,5 +1,35 @@
 # ENMA programming language
 
+**CMAKE** version required: **3.22**
+
+**NASM** version required: **2.16.01**
+
+**gcc** version required: **13.3.0**
+
+## Build
+
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
+
+## ENMA --help
+
+    Usage:
+    
+       enma [options] <path-to-source-files>
+       
+    Options
+    
+    -o <executable-name>    to specify the executable name
+    
+    -v to output details
+
+## ENMA execute example
+
+    cd build 
+    ./enma ../example.em -o example.out
+    ./example.out
 
 ## Info
 
@@ -93,7 +123,7 @@
 
 **Other** - ENMA doesn't care about spaces and new line symbols. You can write them all you want. Spaces and new line symbols are some sort of dividers between tokens.
 
-## Program structure
+## Program structure example
 ```
 let a = 0;
 while => (a < 9){
