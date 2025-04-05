@@ -1,8 +1,7 @@
 /.vscode
 /build
-*.em
 *.asm
 *.o
 *.out
-tests
 my_output
+output

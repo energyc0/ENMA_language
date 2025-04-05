@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[]){
     if(argc == 1){
-        std::cout << "Please, enter input files\nuse --help to show commands.";
+        std::cout << "Please, enter input files\nuse --help to show commands.\n";
         return 1;
     }else if(argc == 2 && strcmp(argv[1], "--help") == 0){
         std::cout.width(10);

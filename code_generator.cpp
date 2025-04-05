@@ -23,8 +23,11 @@ _name("_" + std::to_string(global_sym_table->get_identifier(name)) + "_" + name)
 }
 
 void code_generator::output_preamble(){
-    _file   << "section .text\n"
+    _file   << "section .note.GNU-stack\n"
+            << "section .text\n"
             << "\textern printf\n"
+            << "\textern stdout\n"
+            << "\textern fflush\n"
             << "\tglobal main\n"
             << "main:\n"
             << "\tpush rbp\n"
@@ -41,7 +44,9 @@ void code_generator::output_variables(){
 }
 
 void code_generator::output_postamble(){
-    _file  << "\n\tpop rbp\n"
+    _file  << "\n\tmov rdi, [stdout]\n"
+            << "\tcall fflush\n"
+            << "\tpop rbp\n"
             << "\tmov rax, 60\n"
             << "\tmov rdi, 0\n"
             << "\tsyscall\n\n";
