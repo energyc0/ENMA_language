@@ -22,3 +22,5 @@ add_executable("enma"
 "ast.h"
 "ast.cpp"
 "enma.cpp")
+
+message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")

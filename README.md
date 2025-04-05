@@ -91,38 +91,19 @@
 
 **`while` loop** - `while => ('condition') {'code'}`
 
-**Function definition** - `'function name' => (['arg_name1' 'type1', 'arg_name2' 'type2', ...]) {'code'}`
-
-**Function call** - `'function name'([ arg1, arg2, ...]);`
-
-**Functions** - `exit(exit_value)`
-
-**Return function value** - `return [value];`
-
 **Other** - ENMA doesn't care about spaces and new line symbols. You can write them all you want. Spaces and new line symbols are some sort of dividers between tokens.
 
 ## Program structure
 ```
-sum => (a, b) {
-    return a + b;
-}
-
-foo=>() {
-    return;
-}
-
-let a = 10;
-let b = 11;
-
-let c = sum(a, b);
-
-foo();
-
-for => (i = c to 0 : -1) {
-    b = b + 1;
-}
-
-while => (a < b) {
+let a = 0;
+while => (a < 9){
+    print(a);
     a = a + 3;
 }
+
+let b = 5;
+for => (let i = a to 0 : -1){
+    b =b + 1;
+}
+print(b);
 ```
