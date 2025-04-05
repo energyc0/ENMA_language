@@ -4,7 +4,7 @@ project("ENMA"
 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 23)
-#set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_COMPILER g++)
 add_compile_options("-g")
 
